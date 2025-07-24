@@ -123,14 +123,14 @@ export default function CreateCampaign() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="mx-auto max-w-7xl space-y-8">
+      <div className="mx-auto max-w-4xl px-4">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
             Create New Campaign
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="mt-2 text-gray-600">
             Generate AI-powered newsletter content with A/B testing
           </p>
         </div>
@@ -141,7 +141,7 @@ export default function CreateCampaign() {
             {[1, 2, 3].map((stepNumber) => (
               <div key={stepNumber} className="flex items-center">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+                  className={`flex h-10 w-10 items-center justify-center rounded-full font-semibold ${
                     step >= stepNumber
                       ? "bg-gradient-to-r from-red-500 to-purple-600 text-white"
                       : "bg-gray-200 text-gray-600"
@@ -155,7 +155,7 @@ export default function CreateCampaign() {
                   {stepNumber === 3 && "Schedule & Send"}
                 </div>
                 {stepNumber < 3 && (
-                  <div className="w-16 h-0.5 bg-gray-200 ml-8"></div>
+                  <div className="ml-8 h-0.5 w-16 bg-gray-200"></div>
                 )}
               </div>
             ))}
@@ -164,33 +164,33 @@ export default function CreateCampaign() {
 
         {/* Step 1: Generate Content */}
         {step === 1 && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-6">
+          <div className="rounded-lg bg-white p-6 shadow-md">
+            <h2 className="mb-6 text-xl font-semibold">
               Step 1: Generate Content
             </h2>
 
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Newsletter Prompt
                 </label>
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Describe what you want your newsletter to be about (e.g., 'Weekly fintech digest covering latest trends and innovations')"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full rounded-lg border border-gray-300 p-3 focus:border-transparent focus:ring-2 focus:ring-red-500"
                   rows={4}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Category
                 </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full rounded-lg border border-gray-300 p-3 focus:border-transparent focus:ring-2 focus:ring-red-500"
                 >
                   <option value="Newsletter">Newsletter</option>
                   <option value="Product Updates">Product Updates</option>
@@ -203,7 +203,7 @@ export default function CreateCampaign() {
               <button
                 onClick={handleGenerateContent}
                 disabled={loading || !prompt.trim()}
-                className="w-full bg-gradient-to-r from-red-500 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all"
+                className="w-full rounded-lg bg-gradient-to-r from-red-500 to-purple-600 px-6 py-3 font-semibold text-white transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? "Generating..." : "Generate Content with AI"}
               </button>
@@ -213,20 +213,20 @@ export default function CreateCampaign() {
 
         {/* Step 2: Review & Edit */}
         {step === 2 && generatedContent && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-6">
+          <div className="rounded-lg bg-white p-6 shadow-md">
+            <h2 className="mb-6 text-xl font-semibold">
               Step 2: Review & Edit
             </h2>
 
             <div className="space-y-6">
               {/* Subject Lines */}
               <div>
-                <h3 className="text-lg font-medium mb-4">
+                <h3 className="mb-4 text-lg font-medium">
                   Subject Lines (A/B Test)
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-gray-700">
                       Subject Line A
                     </label>
                     <input
@@ -241,11 +241,11 @@ export default function CreateCampaign() {
                           },
                         })
                       }
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                      className="w-full rounded-lg border border-gray-300 p-3 focus:ring-2 focus:ring-red-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-gray-700">
                       Subject Line B
                     </label>
                     <input
@@ -260,7 +260,7 @@ export default function CreateCampaign() {
                           },
                         })
                       }
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                      className="w-full rounded-lg border border-gray-300 p-3 focus:ring-2 focus:ring-red-500"
                     />
                   </div>
                 </div>
@@ -268,7 +268,7 @@ export default function CreateCampaign() {
 
               {/* Email Body */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Email Body
                 </label>
                 <textarea
@@ -279,21 +279,21 @@ export default function CreateCampaign() {
                       body: e.target.value,
                     })
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                  className="w-full rounded-lg border border-gray-300 p-3 focus:ring-2 focus:ring-red-500"
                   rows={12}
                 />
               </div>
 
               {/* Recipients */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Recipients ({recipients.length} total)
                 </label>
-                <div className="border border-gray-300 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-2">
+                <div className="rounded-lg border border-gray-300 p-4">
+                  <div className="mb-2 text-sm text-gray-600">
                     Email will be sent to:
                   </div>
-                  <div className="bg-gray-50 p-3 rounded border">
+                  <div className="rounded border bg-gray-50 p-3">
                     <span className="font-mono text-sm">{recipients[0]}</span>
                   </div>
                   <div className="mt-2 text-sm text-green-600">
@@ -305,14 +305,14 @@ export default function CreateCampaign() {
               <div className="flex space-x-4">
                 <button
                   onClick={() => setStep(1)}
-                  className="flex-1 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-50"
+                  className="flex-1 rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 hover:bg-gray-50"
                 >
                   Back
                 </button>
                 <button
                   onClick={() => setStep(3)}
                   disabled={recipients.length === 0}
-                  className="flex-1 bg-gradient-to-r from-red-500 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg"
+                  className="flex-1 rounded-lg bg-gradient-to-r from-red-500 to-purple-600 px-6 py-3 font-semibold text-white hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Continue to Scheduling
                 </button>
@@ -323,24 +323,24 @@ export default function CreateCampaign() {
 
         {/* Step 3: Schedule & Send */}
         {step === 3 && generatedContent && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-6">
+          <div className="rounded-lg bg-white p-6 shadow-md">
+            <h2 className="mb-6 text-xl font-semibold">
               Step 3: Schedule & Send
             </h2>
 
             <div className="space-y-6">
               {/* Recommended Times */}
               <div>
-                <h3 className="text-lg font-medium mb-4">
+                <h3 className="mb-4 text-lg font-medium">
                   Recommended Send Times
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   {generatedContent.recommendedTimes
                     .slice(0, 3)
                     .map((time, index) => (
                       <div
                         key={index}
-                        className="p-4 border border-gray-200 rounded-lg text-center"
+                        className="rounded-lg border border-gray-200 p-4 text-center"
                       >
                         <div className="font-semibold">{time.dayOfWeek}</div>
                         <div className="text-2xl font-bold text-purple-600">
@@ -355,15 +355,15 @@ export default function CreateCampaign() {
               </div>
 
               {/* A/B Test Scheduling */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {/* Variant A */}
                 <div>
-                  <h3 className="text-lg font-medium mb-4">
+                  <h3 className="mb-4 text-lg font-medium">
                     Variant A Schedule
                   </h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-gray-700">
                         Date
                       </label>
                       <Calendar
@@ -374,14 +374,14 @@ export default function CreateCampaign() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-gray-700">
                         Time
                       </label>
                       <input
                         type="time"
                         value={selectedTimeA}
                         onChange={(e) => setSelectedTimeA(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                        className="w-full rounded-lg border border-gray-300 p-3 focus:ring-2 focus:ring-red-500"
                       />
                     </div>
                   </div>
@@ -389,12 +389,12 @@ export default function CreateCampaign() {
 
                 {/* Variant B */}
                 <div>
-                  <h3 className="text-lg font-medium mb-4">
+                  <h3 className="mb-4 text-lg font-medium">
                     Variant B Schedule
                   </h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-gray-700">
                         Date
                       </label>
                       <Calendar
@@ -405,14 +405,14 @@ export default function CreateCampaign() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="mb-2 block text-sm font-medium text-gray-700">
                         Time
                       </label>
                       <input
                         type="time"
                         value={selectedTimeB}
                         onChange={(e) => setSelectedTimeB(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                        className="w-full rounded-lg border border-gray-300 p-3 focus:ring-2 focus:ring-red-500"
                       />
                     </div>
                   </div>
@@ -422,14 +422,14 @@ export default function CreateCampaign() {
               <div className="flex space-x-4">
                 <button
                   onClick={() => setStep(2)}
-                  className="flex-1 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-50"
+                  className="flex-1 rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-700 hover:bg-gray-50"
                 >
                   Back
                 </button>
                 <button
                   onClick={handleCreateCampaign}
                   disabled={loading}
-                  className="flex-1 bg-gradient-to-r from-red-500 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg"
+                  className="flex-1 rounded-lg bg-gradient-to-r from-red-500 to-purple-600 px-6 py-3 font-semibold text-white hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {loading ? "Scheduling..." : "Schedule Campaign"}
                 </button>

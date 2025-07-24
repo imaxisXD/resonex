@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description:
     "Create and manage AI-powered newsletter campaigns with A/B testing",
   icons: {
-    icon: "/convex.svg",
+    icon: "/resonex-logo.webp",
   },
 };
 
