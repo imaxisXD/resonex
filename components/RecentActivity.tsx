@@ -1,54 +1,22 @@
 interface ActivityItem {
-  id: string;
-  type: "campaign_sent" | "opened" | "clicked" | "bounced" | "campaign_created";
+  campaignId: string;
   campaignTitle: string;
-  timestamp: string;
-  details?: string;
+  type: string;
+  timestamp: number;
+  details: string;
 }
 
-export default function RecentActivity() {
-  const activities: ActivityItem[] = [
-    {
-      id: "1",
-      type: "campaign_sent",
-      campaignTitle: "Weekly Fintech Digest #42",
-      timestamp: "2 hours ago",
-      details: "Sent to 1,234 subscribers",
-    },
-    {
-      id: "2",
-      type: "opened",
-      campaignTitle: "Product Update March",
-      timestamp: "4 hours ago",
-      details: "Subject A winning with 28% open rate",
-    },
-    {
-      id: "3",
-      type: "campaign_created",
-      campaignTitle: "Q1 Newsletter Summary",
-      timestamp: "6 hours ago",
-      details: "Draft created, pending review",
-    },
-    {
-      id: "4",
-      type: "clicked",
-      campaignTitle: "Holiday Special Offers",
-      timestamp: "1 day ago",
-      details: "12% click-through rate",
-    },
-    {
-      id: "5",
-      type: "bounced",
-      campaignTitle: "Weekly Fintech Digest #41",
-      timestamp: "2 days ago",
-      details: "2.1% bounce rate",
-    },
-  ];
+interface RecentActivityProps {
+  activities: ActivityItem[];
+}
 
+export default function RecentActivity({ activities }: RecentActivityProps) {
   const getActivityIcon = (type: string) => {
     switch (type) {
       case "campaign_sent":
         return "📧";
+      case "campaign_scheduled":
+        return "⏰";
       case "opened":
         return "👁️";
       case "clicked":
@@ -66,6 +34,8 @@ export default function RecentActivity() {
     switch (type) {
       case "campaign_sent":
         return "text-blue-600";
+      case "campaign_scheduled":
+        return "text-purple-600";
       case "opened":
         return "text-green-600";
       case "clicked":
@@ -79,32 +49,54 @@ export default function RecentActivity() {
     }
   };
 
+  const formatTimeAgo = (timestamp: number) => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    if (minutes > 0) return `${minutes}m ago`;
+    return "Just now";
+  };
+
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         Recent Activity
       </h3>
 
-      <div className="space-y-4">
-        {activities.map((activity) => (
-          <div key={activity.id} className="flex items-start gap-3">
-            <div className="text-lg">{getActivityIcon(activity.type)}</div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {activity.campaignTitle}
-              </p>
-              <p className={`text-sm ${getActivityColor(activity.type)}`}>
-                {activity.details}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">{activity.timestamp}</p>
+      {activities.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-gray-500">No recent activity</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {activities.map((activity, index) => (
+            <div
+              key={`${activity.campaignId}-${index}`}
+              className="flex items-start gap-3"
+            >
+              <div className="text-lg">{getActivityIcon(activity.type)}</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {activity.campaignTitle}
+                  </p>
+                  <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
+                    {formatTimeAgo(activity.timestamp)}
+                  </span>
+                </div>
+                <p className={`text-sm ${getActivityColor(activity.type)}`}>
+                  {activity.details}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      <button className="w-full mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium">
-        View all activity
-      </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

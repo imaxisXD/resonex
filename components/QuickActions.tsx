@@ -2,7 +2,11 @@ import PlusIcon from "./icons/PlusIcon";
 import AnalyticsIcon from "./icons/AnalyticsIcon";
 import CalendarIcon from "./icons/CalendarIcon";
 
-export default function QuickActions() {
+interface QuickActionsProps {
+  onCreateCampaign: () => void;
+}
+
+export default function QuickActions({ onCreateCampaign }: QuickActionsProps) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -11,6 +15,7 @@ export default function QuickActions() {
 
       <div className="space-y-3">
         <button
+          onClick={onCreateCampaign}
           className="w-full flex items-center gap-3 p-3 text-white rounded-lg transition-all hover:shadow-md font-medium"
           style={{
             background: "linear-gradient(135deg, #EE342F 0%, #8D2676 100%)",

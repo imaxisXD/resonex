@@ -4,13 +4,33 @@ import AnalyticsIcon from "./icons/AnalyticsIcon";
 import UsersIcon from "./icons/UsersIcon";
 import TrendChart from "./TrendChart";
 
-export default function MetricDashboard() {
+interface Analytics {
+  totalCampaigns: number;
+  totalRecipients: number;
+  averageOpenRate: number;
+  averageClickRate: number;
+  averageBounceRate: number;
+  abTestUplift: number;
+  recentActivity: Array<{
+    campaignId: string;
+    campaignTitle: string;
+    type: string;
+    timestamp: number;
+    details: string;
+  }>;
+}
+
+interface MetricDashboardProps {
+  analytics: Analytics;
+}
+
+export default function MetricDashboard({ analytics }: MetricDashboardProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {/* Total Campaigns */}
       <MetricCard
         title="Total Campaigns"
-        value="23"
+        value={analytics.totalCampaigns.toString()}
         trend="12%"
         isPositive={true}
         icon={<MailIcon className="w-6 h-6" />}
@@ -19,17 +39,17 @@ export default function MetricDashboard() {
       {/* Average Open Rate */}
       <MetricCard
         title="Avg. Open Rate"
-        value="24.8%"
+        value={`${analytics.averageOpenRate.toFixed(1)}%`}
         trend="3.2%"
-        isPositive={true}
+        isPositive={analytics.averageOpenRate > 20}
         icon={<AnalyticsIcon className="w-6 h-6" />}
-        chart={<TrendChart isPositive={true} />}
+        chart={<TrendChart isPositive={analytics.averageOpenRate > 20} />}
       />
 
       {/* Total Subscribers */}
       <MetricCard
         title="Total Subscribers"
-        value="8,421"
+        value={analytics.totalRecipients.toLocaleString()}
         trend="18.1%"
         isPositive={true}
         icon={<UsersIcon className="w-6 h-6" />}
@@ -38,11 +58,11 @@ export default function MetricDashboard() {
       {/* A/B Uplift */}
       <MetricCard
         title="A/B Test Uplift"
-        value="8.4%"
+        value={`${analytics.abTestUplift.toFixed(1)}%`}
         trend="2.1%"
-        isPositive={true}
+        isPositive={analytics.abTestUplift > 0}
         icon={<AnalyticsIcon className="w-6 h-6" />}
-        chart={<TrendChart isPositive={true} />}
+        chart={<TrendChart isPositive={analytics.abTestUplift > 0} />}
       />
     </div>
   );
