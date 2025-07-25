@@ -55,38 +55,38 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-64 h-screen bg-gray-100 flex flex-col">
-      <div className="p-6 py-3">
-        <div className="flex flex-col gap-3">
+    <div className="flex h-screen w-64 flex-col bg-gray-100">
+      <div className="p-6 py-4 pb-7">
+        <div className="flex flex-col gap-2">
           <div className="flex items-center justify-center gap-1">
             <Image
               src="/resonex-logo.webp"
               alt="Resonex"
-              width={40}
-              height={40}
+              width={36}
+              height={36}
             />
             <Image
               src="/resonex-txt.webp"
               alt="Resonex"
               width={100}
-              height={40}
+              height={100}
             />
           </div>
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-center text-xs text-gray-500">
             Powered by Convex × Resend
           </p>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 space-y-2">
+      <nav className="flex-1 space-y-2 px-4">
         {/* Dashboard */}
         <div
           className={getNavItemClasses(
             pathname === "/dashboard" || pathname.startsWith("/dashboard"),
           )}
         >
-          <DashboardIcon className="w-5 h-5" />
+          <DashboardIcon className="h-5 w-5" />
           <span className="text-sm">Dashboard</span>
         </div>
         {/* Campaigns */}
@@ -97,11 +97,11 @@ export default function Sidebar() {
           onClick={() => setIsCampaignsOpen(!isCampaignsOpen)}
         >
           <div className="flex items-center gap-3">
-            <MailIcon className="w-5 h-5" />
-            <span className="text-sm ">Campaigns</span>
+            <MailIcon className="h-5 w-5" />
+            <span className="text-sm">Campaigns</span>
           </div>
           <ChevronDownIcon
-            className={`w-4 h-4 transition-transform ${
+            className={`h-4 w-4 transition-transform ${
               isCampaignsOpen ? "rotate-180" : ""
             }`}
           />
@@ -122,7 +122,7 @@ export default function Sidebar() {
             >
               <span className="text-sm">Drafts</span>
               <span
-                className="text-xs px-2 py-1 rounded-full font-medium"
+                className="rounded-full px-2 py-1 text-xs font-medium"
                 style={{ backgroundColor: "#F3B01C20", color: "#F3B01C" }}
               >
                 2
@@ -135,7 +135,7 @@ export default function Sidebar() {
             >
               <span className="text-sm">Scheduled</span>
               <span
-                className="text-xs px-2 py-1 rounded-full font-medium"
+                className="rounded-full px-2 py-1 text-xs font-medium"
                 style={{ backgroundColor: "#8D267620", color: "#8D2676" }}
               >
                 3
@@ -152,7 +152,7 @@ export default function Sidebar() {
         )}
         {/* Analytics */}
         <div className={getNavItemClasses(pathname.includes("/analytics"))}>
-          <AnalyticsIcon className="w-5 h-5" />
+          <AnalyticsIcon className="h-5 w-5" />
           <span className="text-sm">Analytics</span>
         </div>
         {/* Calendar */}
@@ -161,12 +161,12 @@ export default function Sidebar() {
             pathname.includes("/scheduling") || pathname.includes("/calendar"),
           )}
         >
-          <CalendarIcon className="w-5 h-5" />
+          <CalendarIcon className="h-5 w-5" />
           <span className="text-sm">Scheduling</span>
         </div>
         {/* Settings */}
         <div className={getNavItemClasses(pathname.includes("/settings"))}>
-          <SettingsIcon className="w-5 h-5" />
+          <SettingsIcon className="h-5 w-5" />
           <span className="text-sm">Settings</span>
         </div>
       </nav>
