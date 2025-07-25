@@ -1,6 +1,6 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { internal } from "./_generated/api";
+// import { internal } from "./_generated/api";
 import { auth } from "./auth";
 
 const http = httpRouter();
@@ -26,7 +26,8 @@ http.route({
       let payload;
       try {
         payload = JSON.parse(body);
-      } catch (error) {
+      } catch (error: unknown) {
+        console.error("Invalid JSON:", error);
         return new Response("Invalid JSON", { status: 400 });
       }
 
@@ -38,10 +39,10 @@ http.route({
       }
 
       // Process the webhook event
-      await ctx.runMutation(internal.events.processEmailEvent, {
-        type,
-        data: JSON.stringify(data),
-      });
+      // await ctx.runMutation(internal.events.processEmailEvent, {
+      //   type,
+      //   data: JSON.stringify(data),
+      // });
 
       return new Response("OK", { status: 200 });
     } catch (error) {

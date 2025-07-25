@@ -55,7 +55,7 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="flex h-screen w-64 flex-col bg-gray-100">
+    <div className="flex h-screen w-56 flex-col bg-gray-100">
       <div className="p-6 py-4 pb-7">
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-center gap-1">
@@ -79,7 +79,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-2 px-4">
+      <nav className="flex-1 space-y-1 px-3">
         {/* Dashboard */}
         <div
           className={getNavItemClasses(

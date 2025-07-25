@@ -17,8 +17,6 @@ import type * as auth from "../auth.js";
 import type * as campaigns from "../campaigns.js";
 import type * as crons from "../crons.js";
 import type * as emails from "../emails.js";
-import type * as events from "../events.js";
-import type * as externalActions from "../externalActions.js";
 import type * as http from "../http.js";
 import type * as myFunctions from "../myFunctions.js";
 import type * as recommendations from "../recommendations.js";
@@ -36,8 +34,6 @@ declare const fullApi: ApiFromModules<{
   campaigns: typeof campaigns;
   crons: typeof crons;
   emails: typeof emails;
-  events: typeof events;
-  externalActions: typeof externalActions;
   http: typeof http;
   myFunctions: typeof myFunctions;
   recommendations: typeof recommendations;

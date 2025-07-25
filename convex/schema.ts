@@ -10,14 +10,17 @@ export default defineSchema({
 
   // Campaign data model
   campaigns: defineTable({
+    campaignName: v.string(),
     userId: v.string(),
     prompt: v.string(),
-    subjectLines: v.object({
-      A: v.string(),
-      B: v.string(),
-    }),
-    body: v.string(),
-    recipients: v.array(v.string()),
+    subjectLines: v.optional(
+      v.object({
+        A: v.string(),
+        B: v.string(),
+      }),
+    ),
+    body: v.optional(v.string()),
+    recipients: v.optional(v.array(v.string())),
     sendTimeA: v.optional(v.number()),
     sendTimeB: v.optional(v.number()),
     status: v.union(
@@ -25,7 +28,7 @@ export default defineSchema({
       v.literal("scheduled"),
       v.literal("sent"),
     ),
-    category: v.string(),
+    category: v.union(v.literal("newsletter"), v.literal("marketing")),
     resendEmailIds: v.optional(
       v.object({
         A: v.array(v.string()),
