@@ -59,7 +59,7 @@ export const getCampaigns = query({
 
 export const getCampaign = query({
   args: {
-    campaignId: v.id("campaigns"),
+    campaignId: v.string(),
   },
   returns: v.union(
     v.object({
@@ -98,12 +98,15 @@ export const getCampaign = query({
     if (!userId) {
       return null;
     }
-
-    const campaign = await ctx.db.get(args.campaignId);
-    if (!campaign || campaign.userId !== userId) {
+    const campaignId = ctx.db.normalizeId("campaigns", args.campaignId);
+    if (!campaignId) {
       return null;
     }
-
+    const campaign = await ctx.db.get(campaignId);
+    if (!campaign || campaign.userId !== userId) {
+      console.log("Campaign not found or access denied");
+      return null;
+    }
     return campaign;
   },
 });
