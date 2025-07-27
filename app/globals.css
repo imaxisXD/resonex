@@ -119,6 +119,16 @@ body,
   }
 }
 
+@keyframes gradient-slide {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 .warning-tape-border {
   position: relative;
   background: repeating-linear-gradient(
