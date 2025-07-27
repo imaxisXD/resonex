@@ -22,6 +22,7 @@ import { Doc } from "@/convex/_generated/dataModel";
 import { useParams } from "next/navigation";
 import { Calendar, FileText, Mail, BarChart3 } from "lucide-react";
 import ABTestNode from "@/components/ABTestNode";
+import ContentGenerationNode from "@/components/ContentGenerationNode";
 import { NodesCMDK } from "@/components/NodesCMDK";
 
 interface CampaignNodeData extends Record<string, unknown> {
@@ -93,30 +94,6 @@ const CampaignNode = ({ data }: { data: CampaignNodeData }) => {
           </>
         )}
 
-        {data.type === "content" && (
-          <>
-            {data.data.subjectLines ? (
-              <div>
-                <div className="mb-1 font-medium">Subject Lines:</div>
-                <div className="space-y-1">
-                  <div>A: {data.data.subjectLines.A}</div>
-                  <div>B: {data.data.subjectLines.B}</div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-gray-500">Content not generated yet</div>
-            )}
-            {data.data.body && (
-              <div>
-                <span className="font-medium">Body:</span>
-                <p className="mt-1 line-clamp-4 text-gray-600">
-                  {data.data.body}
-                </p>
-              </div>
-            )}
-          </>
-        )}
-
         {data.type === "schedule" && (
           <>
             {data.data.sendTimeA || data.data.sendTimeB ? (
@@ -164,7 +141,7 @@ const CampaignNode = ({ data }: { data: CampaignNodeData }) => {
         />
       )}
 
-      {(data.type === "content" || data.type === "schedule") && (
+      {data.type === "schedule" && (
         <>
           <Handle
             type="target"
@@ -243,6 +220,7 @@ export default function CampaignPage() {
     () => ({
       campaignNode: CampaignNode,
       abTestNode: ABTestNodeWrapper,
+      contentGenerationNode: ContentGenerationNode,
     }),
     [ABTestNodeWrapper],
   );
@@ -276,24 +254,22 @@ export default function CampaignPage() {
         position: { x: 0, y: -50 },
         data: {
           label: "Content Generation",
-          type: "content",
           data: campaign,
           status:
             campaign.body || campaign.subjectLines ? "completed" : "pending",
-        } as CampaignNodeData,
-        type: "campaignNode",
+        },
+        type: "contentGenerationNode",
       },
       {
         id: "content-2",
         position: { x: 400, y: -50 },
         data: {
           label: "Content Generation",
-          type: "content",
           data: campaign,
           status:
             campaign.body || campaign.subjectLines ? "completed" : "pending",
-        } as CampaignNodeData,
-        type: "campaignNode",
+        },
+        type: "contentGenerationNode",
       },
       {
         id: "schedule",
@@ -429,6 +405,17 @@ export default function CampaignPage() {
             status: "pending",
           } as CampaignNodeData,
           type: "campaignNode",
+        };
+      } else if (nodeType.type === "contentGenerationNode") {
+        newNode = {
+          id: newId,
+          position,
+          data: {
+            label: nodeType.label,
+            data: campaign || {},
+            status: "pending",
+          },
+          type: "contentGenerationNode",
         };
       } else if (nodeType.type === "labeledNode") {
         newNode = {

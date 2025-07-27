@@ -109,3 +109,33 @@ body,
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes warning-tape-slide {
+  0% {
+    background-position: 0px 0px;
+  }
+  100% {
+    background-position: 80px 0px;
+  }
+}
+
+.warning-tape-border {
+  position: relative;
+  background: repeating-linear-gradient(
+    45deg,
+    #ffcc00eb 0px,
+    #ffcc00 10px,
+    #00000095 10px,
+    #000 20px
+  );
+  animation: warning-tape-slide 15s linear infinite alternate !important;
+}
+
+.warning-tape-inner {
+  position: relative;
+  background: rgb(255, 255, 255);
+  margin: 4px;
+  border-radius: 4px;
+  height: calc(100% - 8px);
+  z-index: 1;
+}
