@@ -131,7 +131,6 @@ const CampaignNode = ({ data }: { data: CampaignNodeData }) => {
         )}
       </div>
 
-      {/* Simple handles based on node type */}
       {data.type === "campaign" && (
         <Handle
           type="source"
@@ -178,7 +177,6 @@ const CampaignNode = ({ data }: { data: CampaignNodeData }) => {
   );
 };
 
-// Interface for LabeledNode data
 interface LabeledNodeData {
   title: string;
   target: string;
@@ -190,12 +188,10 @@ export default function CampaignPage() {
   const campaignId = params.id as string;
   const campaign = useQuery(api.campaigns.getCampaign, { campaignId });
 
-  // Store max connections for each labeled node
   const [nodeMaxConnections, setNodeMaxConnections] = useState<
     Record<string, number>
   >({});
 
-  // Create wrapper inside component to access state
   const ABTestNodeWrapper = useCallback(
     ({ data, id }: { data: LabeledNodeData; id: string }) => {
       const handleOutputEdgesChange = (count: number) => {
@@ -242,7 +238,7 @@ export default function CampaignPage() {
       },
       {
         id: "abTestNode",
-        position: { x: 150, y: -250 },
+        position: { x: 148, y: -280 },
         data: {
           title: "A/B Test",
           target: "target",

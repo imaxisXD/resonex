@@ -1,8 +1,17 @@
 import { Handle, Position } from "@xyflow/react";
-import { FileText } from "lucide-react";
+import { FileText, Pencil } from "lucide-react";
 import { Doc } from "@/convex/_generated/dataModel";
 import { useState } from "react";
 import ContentGenerationDrawer from "./ContentGenerationDrawer";
+import { EmailTemplate } from "./types/email-template";
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "./ui/button";
+
+interface SelectedTemplateInfo {
+  template: EmailTemplate;
+  templateIndex: number;
+  emailHTML: string;
+}
 
 interface ContentGenerationNodeData {
   label: string;
@@ -18,6 +27,9 @@ export default function ContentGenerationNode({
   data,
 }: ContentGenerationNodeProps) {
   const [gradientEnabled, setGradientEnabled] = useState(true);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<SelectedTemplateInfo | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const getStatusColor = () => {
     switch (data.status) {
@@ -30,6 +42,63 @@ export default function ContentGenerationNode({
       default:
         return "border-blue-500 bg-blue-50/80";
     }
+  };
+
+  const handleTemplateSelect = (templateInfo: SelectedTemplateInfo) => {
+    setSelectedTemplate(templateInfo);
+  };
+
+  const TemplateThumbnail = ({
+    templateInfo,
+  }: {
+    templateInfo: SelectedTemplateInfo;
+  }) => {
+    return (
+      <div className="flex flex-col items-center space-y-3 text-center">
+        <div className="relative flex h-32 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-200 bg-gray-100">
+          <div
+            className="h-full w-full origin-center scale-50 transform bg-white"
+            style={{
+              fontSize: "14px",
+              width: "200%",
+              height: "200%",
+              transform: "scale(0.9)",
+            }}
+            dangerouslySetInnerHTML={{
+              __html: templateInfo.emailHTML,
+            }}
+          />
+
+          {/* Bottom preview strip */}
+          <div className="absolute right-0 bottom-0 left-0 bg-blue-600/90 px-2 py-1 text-white">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1">
+                <span className="font-medium">Selected Template</span>
+              </div>
+              <span className="text-xs text-blue-100">(Hover to change)</span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setIsDrawerOpen(true)}
+            className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity duration-200 hover:opacity-100"
+          >
+            <span
+              className={cn(
+                buttonVariants({ variant: "default" }),
+                "h-8 text-xs",
+              )}
+            >
+              <Pencil className="size-4" />
+              Change Template
+            </span>
+            <span className="text-xs text-white">
+              Click to choose a different template
+            </span>
+          </button>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -58,41 +127,43 @@ export default function ContentGenerationNode({
               {data.status || "ready"}
             </p>
           </div>
-          <div className="flex gap-1">
-            {data.status === "pending" && (
-              <ContentGenerationDrawer campaign={data.data} />
-            )}
-            <button
-              onClick={() => setGradientEnabled(!gradientEnabled)}
-              className="rounded bg-gray-100 px-2 py-1 text-xs hover:bg-gray-200"
-              title="Toggle gradient effect"
-            >
-              {gradientEnabled ? "✨" : "⚫"}
-            </button>
-          </div>
+          <button
+            onClick={() => setGradientEnabled(!gradientEnabled)}
+            className="rounded bg-gray-100 px-2 py-1 text-xs hover:bg-gray-200"
+            title="Toggle gradient effect"
+          >
+            {gradientEnabled ? "✨" : "⚫"}
+          </button>
         </div>
 
-        <div className="space-y-2 text-xs">
-          {data.data.subjectLines ? (
-            <div>
-              <div className="mb-1 font-medium">Subject Lines:</div>
-              <div className="space-y-1">
-                <div>A: {data.data.subjectLines.A}</div>
-                <div>B: {data.data.subjectLines.B}</div>
-              </div>
-            </div>
+        <div className="mb-3 space-y-2 text-xs">
+          {selectedTemplate ? (
+            <TemplateThumbnail templateInfo={selectedTemplate} />
           ) : (
-            <div className="text-gray-500">Content not generated yet</div>
-          )}
-          {data.data.body && (
-            <div>
-              <span className="font-medium">Body:</span>
-              <p className="mt-1 line-clamp-4 text-gray-600">
-                {data.data.body}
-              </p>
+            <div className="flex flex-col items-center gap-2">
+              <div className="text-gray-500">
+                Choose a template to generate email content.
+              </div>
+              {data.status === "pending" && (
+                <ContentGenerationDrawer
+                  campaign={data.data}
+                  onTemplateSelect={handleTemplateSelect}
+                  open={isDrawerOpen}
+                  onOpenChange={setIsDrawerOpen}
+                />
+              )}
             </div>
           )}
         </div>
+
+        {selectedTemplate && (
+          <ContentGenerationDrawer
+            campaign={data.data}
+            onTemplateSelect={handleTemplateSelect}
+            open={isDrawerOpen}
+            onOpenChange={setIsDrawerOpen}
+          />
+        )}
 
         <Handle
           type="target"

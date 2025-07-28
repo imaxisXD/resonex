@@ -1,5 +1,7 @@
-import { Settings } from "lucide-react";
+"use client";
+import { Mail } from "lucide-react";
 import { Doc } from "@/convex/_generated/dataModel";
+import { useState, useEffect } from "react";
 import {
   Drawer,
   DrawerClose,
@@ -9,72 +11,151 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
+import { type CarouselApi } from "@/components/ui/carousel";
+import TemplateCarousel from "./TemplateCarousel";
+import EmailPreviewDialog from "./EmailPreviewDialog";
+import {
+  getEmailTemplates,
+  generateAllEmailHTMLs,
+} from "./utils/email-templates";
+import { EmailTemplate } from "./types/email-template";
+
+interface SelectedTemplateInfo {
+  template: EmailTemplate;
+  templateIndex: number;
+  emailHTML: string;
+}
 
 interface ContentGenerationDrawerProps {
   campaign: Doc<"campaigns">;
+  onTemplateSelect?: (templateInfo: SelectedTemplateInfo) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export default function ContentGenerationDrawer({
   campaign,
+  onTemplateSelect,
+  open,
+  onOpenChange,
 }: ContentGenerationDrawerProps) {
+  const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
+  const [emailHTMLs, setEmailHTMLs] = useState<string[]>([]);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [previewTemplateIndex, setPreviewTemplateIndex] = useState<
+    number | null
+  >(null);
+
+  const emailTemplates = getEmailTemplates(campaign);
+
+  useEffect(() => {
+    const generateEmailHTMLs = async () => {
+      const htmls = await generateAllEmailHTMLs(emailTemplates, campaign);
+      setEmailHTMLs(htmls);
+    };
+
+    generateEmailHTMLs();
+  }, [campaign.campaignName, campaign.category]);
+
+  useEffect(() => {
+    if (!carouselApi) return;
+
+    const onSelect = () => {
+      setSelectedTemplateIndex(carouselApi.selectedScrollSnap());
+    };
+
+    carouselApi.on("select", onSelect);
+    onSelect();
+
+    return () => {
+      carouselApi.off("select", onSelect);
+    };
+  }, [carouselApi]);
+
+  const handleTemplateSelect = (index: number) => {
+    setSelectedTemplateIndex(index);
+    if (carouselApi) {
+      carouselApi.scrollTo(index);
+    }
+  };
+
+  const handlePreviewClick = (index: number, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setPreviewTemplateIndex(index);
+    setPreviewDialogOpen(true);
+  };
+
+  const handleUseTemplate = () => {
+    const selectedTemplate = emailTemplates[selectedTemplateIndex];
+    const selectedHTML = emailHTMLs[selectedTemplateIndex];
+
+    if (onTemplateSelect && selectedTemplate && selectedHTML) {
+      onTemplateSelect({
+        template: selectedTemplate,
+        templateIndex: selectedTemplateIndex,
+        emailHTML: selectedHTML,
+      });
+    }
+
+    onOpenChange?.(false);
+  };
+
+  const previewTemplate =
+    previewTemplateIndex !== null ? emailTemplates[previewTemplateIndex] : null;
+  const previewHTML =
+    previewTemplateIndex !== null ? emailHTMLs[previewTemplateIndex] : "";
+
   return (
-    <Drawer>
+    <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerTrigger asChild>
-        <button
-          className="rounded border border-yellow-300 bg-yellow-100 px-2 py-1 text-xs hover:bg-yellow-200"
-          title="Configure generation settings"
-        >
-          <Settings className="size-3" />
-        </button>
+        <Button title="Configure generation settings" className="h-9">
+          <Mail className="size-3" /> Choose a template
+        </Button>
       </DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent className="max-h-[70vh] bg-white">
         <DrawerHeader>
-          <DrawerTitle>Content Generation Settings</DrawerTitle>
+          <DrawerTitle>Email Templates</DrawerTitle>
           <DrawerDescription>
-            Configure the settings for generating content for this campaign.
+            Choose from our collection of email templates.
           </DrawerDescription>
         </DrawerHeader>
-        <div className="space-y-4 p-4">
-          <div>
-            <h4 className="mb-2 font-medium">Campaign Details</h4>
-            <div className="space-y-2 text-sm">
-              <div>
-                <span className="font-medium">Name:</span>{" "}
-                {campaign.campaignName}
-              </div>
-              <div>
-                <span className="font-medium">Category:</span>{" "}
-                {campaign.category}
-              </div>
-              <div>
-                <span className="font-medium">Status:</span> {campaign.status}
-              </div>
-              <div>
-                <span className="font-medium">Prompt:</span>
-                <p className="mt-1 max-h-20 overflow-y-auto text-gray-600">
-                  {campaign.prompt}
-                </p>
-              </div>
-            </div>
-          </div>
 
-          <div>
-            <h4 className="mb-2 font-medium">Generation Status</h4>
-            <div className="text-sm text-gray-600">
-              Content generation is currently pending. The system will
-              automatically generate subject lines and email body based on your
-              campaign settings.
-            </div>
-          </div>
+        <div className="flex border-b" />
+
+        <div className="flex flex-1 items-center justify-center overflow-y-auto py-4">
+          <TemplateCarousel
+            templates={emailTemplates}
+            emailHTMLs={emailHTMLs}
+            selectedIndex={selectedTemplateIndex}
+            onTemplateSelect={handleTemplateSelect}
+            onPreviewClick={handlePreviewClick}
+            onCarouselApiChange={setCarouselApi}
+          />
         </div>
-        <div className="p-4 pt-0">
-          <DrawerClose asChild>
-            <button className="w-full rounded bg-gray-100 px-4 py-2 text-sm hover:bg-gray-200">
-              Close
-            </button>
-          </DrawerClose>
+
+        <div className="border-t p-4">
+          <div className="flex flex-col items-center justify-between gap-2">
+            <Button onClick={handleUseTemplate}>Use This Template</Button>
+            <DrawerClose asChild>
+              <Button
+                variant="outline"
+                className="bg-accent h-9 rounded-md border border-gray-300 px-14 hover:bg-gray-200"
+              >
+                Close
+              </Button>
+            </DrawerClose>
+          </div>
         </div>
       </DrawerContent>
+
+      <EmailPreviewDialog
+        open={previewDialogOpen}
+        onOpenChange={setPreviewDialogOpen}
+        template={previewTemplate}
+        emailHTML={previewHTML}
+      />
     </Drawer>
   );
 }
