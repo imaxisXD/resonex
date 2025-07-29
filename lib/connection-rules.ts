@@ -14,6 +14,7 @@ interface ConnectionRule {
     target: Node,
     sourceHandle?: string,
     targetHandle?: string,
+    existingEdges?: Edge[],
   ) => {
     isValid: boolean;
     message?: string;
@@ -61,40 +62,17 @@ export const CONNECTION_RULES: ConnectionRule[] = [
     sourceType: "abTestNode",
     targetType: "contentGenerationNode",
     sourceHandle: "target-output",
-    maxConnections: 2,
     allowMultiple: true,
   },
   {
     sourceType: "contentGenerationNode",
-    targetType: "campaignNode",
+    targetType: "scheduleNode",
     maxConnections: 1,
-    customValidator: (source, target) => {
-      const targetData = target.data as CampaignNodeData;
-      if (targetData?.type === "schedule") {
-        return { isValid: true };
-      }
-      return {
-        isValid: false,
-        message: "Content nodes can only connect to scheduling nodes",
-      };
-    },
   },
   {
-    sourceType: "campaignNode",
-    targetType: "campaignNode",
+    sourceType: "scheduleNode",
+    targetType: "analyticsNode",
     maxConnections: 1,
-    customValidator: (source, target) => {
-      const sourceData = source.data as CampaignNodeData;
-      const targetData = target.data as CampaignNodeData;
-
-      if (sourceData?.type === "schedule" && targetData?.type === "analytics") {
-        return { isValid: true };
-      }
-      return {
-        isValid: false,
-        message: "Schedule nodes can only connect to analytics nodes",
-      };
-    },
   },
   {
     sourceType: "*",
@@ -109,15 +87,22 @@ export const CONNECTION_RULES: ConnectionRule[] = [
 export const NODE_CONNECTION_LIMITS: NodeConnectionLimits = {
   campaignNode: {
     maxOutgoing: 1,
+    maxIncoming: 0,
+  },
+  scheduleNode: {
     maxIncoming: 2,
+    maxOutgoing: 1,
+  },
+  analyticsNode: {
+    maxIncoming: 1,
+    maxOutgoing: 0,
   },
   abTestNode: {
     maxIncoming: 1,
-    maxOutgoing: 4,
-    maxConnectionsPerHandle: 2,
+    maxOutgoing: 10,
+    maxConnectionsPerHandle: 10,
   },
   contentGenerationNode: {
-    maxIncoming: 1,
     maxOutgoing: 1,
   },
 };
@@ -139,6 +124,32 @@ export class ConnectionRulesEngine {
       toast.error(message);
       this.lastToastTime = now;
     }
+  }
+
+  private validateABTestConnection(
+    sourceNode: Node,
+    targetNode: Node,
+    sourceHandle: string | undefined,
+    existingEdges: Edge[],
+  ): { isValid: boolean; message?: string } {
+    // Check how many connections already exist from this ABTestNode
+    const existingConnections = existingEdges.filter(
+      (edge) =>
+        edge.source === sourceNode.id && edge.sourceHandle === sourceHandle,
+    ).length;
+
+    // Get the configured output count from the node's data
+    const nodeData = sourceNode.data as { outputEdges?: number };
+    const configuredOutputs = nodeData?.outputEdges || 2;
+
+    if (existingConnections >= configuredOutputs) {
+      return {
+        isValid: false,
+        message: `A/B Test node is configured for ${configuredOutputs} variants. Already has ${existingConnections} connections.`,
+      };
+    }
+
+    return { isValid: true };
   }
 
   private getNodeType(node: Node): string {
@@ -251,6 +262,22 @@ export class ConnectionRulesEngine {
       return false;
     }
 
+    // Special validation for AB test connections
+    if (sourceType === "abTestNode" && targetType === "contentGenerationNode") {
+      const abTestValidation = this.validateABTestConnection(
+        sourceNode,
+        targetNode,
+        sourceHandle,
+        existingEdges,
+      );
+      if (!abTestValidation.isValid) {
+        this.showDebouncedToast(
+          abTestValidation.message || "AB Test connection limit exceeded",
+        );
+        return false;
+      }
+    }
+
     const applicableRules = this.rules
       .filter((rule) => {
         const sourceMatches =
@@ -306,6 +333,7 @@ export class ConnectionRulesEngine {
           targetNode,
           sourceHandle,
           targetHandle,
+          existingEdges,
         );
         if (!validation.isValid) {
           this.showDebouncedToast(
@@ -330,6 +358,7 @@ export class ConnectionRulesEngine {
         targetNode,
         sourceHandle,
         targetHandle,
+        existingEdges,
       );
       if (!validation.isValid) {
         this.showDebouncedToast(validation.message || "Connection not allowed");

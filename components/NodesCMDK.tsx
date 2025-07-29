@@ -25,7 +25,12 @@ interface NodeType {
   id: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  type: "campaignNode" | "abTestNode";
+  type:
+    | "campaignNode"
+    | "scheduleNode"
+    | "analyticsNode"
+    | "abTestNode"
+    | "contentGenerationNode";
   description: string;
 }
 
@@ -41,21 +46,21 @@ const availableNodes: NodeType[] = [
     id: "content",
     label: "Content Generation",
     icon: FileText,
-    type: "campaignNode",
+    type: "contentGenerationNode",
     description: "Generate email content and subject lines",
   },
   {
     id: "schedule",
     label: "Scheduling",
     icon: Calendar,
-    type: "campaignNode",
+    type: "scheduleNode",
     description: "Schedule campaign delivery times",
   },
   {
     id: "analytics",
     label: "Analytics",
     icon: BarChart3,
-    type: "campaignNode",
+    type: "analyticsNode",
     description: "Track campaign performance metrics",
   },
   {

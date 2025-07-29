@@ -2,6 +2,7 @@
 import { useMemo, useEffect, useCallback } from "react";
 import {
   ReactFlow,
+  ReactFlowProvider,
   Background,
   Controls,
   MiniMap,
@@ -10,6 +11,7 @@ import {
   useEdgesState,
   MarkerType,
   addEdge,
+  useReactFlow,
   type Connection,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -20,6 +22,8 @@ import ABTestNode from "@/components/ABTestNode";
 import ContentGenerationNode from "@/components/ContentGenerationNode";
 import { NodesCMDK } from "@/components/NodesCMDK";
 import { CampaignNode } from "@/components/CampaignNode";
+import { ScheduleNode } from "@/components/ScheduleNode";
+import { AnalyticsNode } from "@/components/AnalyticsNode";
 import { CampaignNodeData } from "@/lib/connection-rules";
 import { useConnectionRules } from "@/hooks/useConnectionRules";
 
@@ -27,18 +31,21 @@ interface ABTestNodeData {
   title: string;
   target: string;
   maxConnections?: number;
+  outputEdges?: number;
 }
 
-export default function CampaignPage() {
+function CampaignPageContent() {
   const params = useParams();
   const campaignId = params.id as string;
   const campaign = useQuery(api.campaigns.getCampaign, { campaignId });
+  const { updateNodeData } = useReactFlow();
 
   const handleOutputEdgesChange = useCallback(
     (id: string) => (count: number) => {
       console.log(`Node ${id} output edges changed to ${count}`);
+      updateNodeData(id, { outputEdges: count });
     },
-    [],
+    [updateNodeData],
   );
 
   const ABTestNodeWrapper = useCallback(
@@ -57,6 +64,8 @@ export default function CampaignPage() {
   const nodeTypes = useMemo(
     () => ({
       campaignNode: CampaignNode,
+      scheduleNode: ScheduleNode,
+      analyticsNode: AnalyticsNode,
       abTestNode: ABTestNodeWrapper,
       contentGenerationNode: ContentGenerationNode,
     }),
@@ -84,6 +93,7 @@ export default function CampaignPage() {
         data: {
           title: "A/B Test",
           target: "target",
+          outputEdges: 2,
         },
         type: "abTestNode",
       },
@@ -123,7 +133,7 @@ export default function CampaignPage() {
                 ? "pending"
                 : "disabled",
         } as CampaignNodeData,
-        type: "campaignNode",
+        type: "scheduleNode",
       },
       {
         id: "analytics",
@@ -134,7 +144,7 @@ export default function CampaignPage() {
           data: campaign,
           status: campaign.status === "sent" ? "completed" : "disabled",
         } as CampaignNodeData,
-        type: "campaignNode",
+        type: "analyticsNode",
       },
     ];
   }, [campaign]);
@@ -189,17 +199,41 @@ export default function CampaignPage() {
       const newId = `${nodeType.id}-${Date.now()}`;
 
       let newNode;
-      if (nodeType.type === "campaignNode") {
+      if (nodeType.id === "campaign") {
         newNode = {
           id: newId,
           position,
           data: {
             label: nodeType.label,
-            type: nodeType.id,
+            type: "campaign",
             data: campaign || {},
             status: "pending",
           } as CampaignNodeData,
           type: "campaignNode",
+        };
+      } else if (nodeType.id === "schedule") {
+        newNode = {
+          id: newId,
+          position,
+          data: {
+            label: nodeType.label,
+            type: "schedule",
+            data: campaign || {},
+            status: "pending",
+          } as CampaignNodeData,
+          type: "scheduleNode",
+        };
+      } else if (nodeType.id === "analytics") {
+        newNode = {
+          id: newId,
+          position,
+          data: {
+            label: nodeType.label,
+            type: "analytics",
+            data: campaign || {},
+            status: "pending",
+          } as CampaignNodeData,
+          type: "analyticsNode",
         };
       } else if (nodeType.type === "contentGenerationNode") {
         newNode = {
@@ -219,6 +253,7 @@ export default function CampaignPage() {
           data: {
             title: nodeType.label,
             target: "target",
+            outputEdges: 2,
           },
           type: "abTestNode",
         };
@@ -310,5 +345,13 @@ export default function CampaignPage() {
         />
       </ReactFlow>
     </div>
+  );
+}
+
+export default function CampaignPage() {
+  return (
+    <ReactFlowProvider>
+      <CampaignPageContent />
+    </ReactFlowProvider>
   );
 }
