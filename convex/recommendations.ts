@@ -3,12 +3,8 @@ import {
   internalAction,
   internalMutation,
   internalQuery,
-  mutation,
-  query,
 } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
-import { Id } from "./_generated/dataModel";
 
 // Generate time-based recommendations for a user
 export const generateRecommendations = internalAction({
@@ -242,49 +238,49 @@ export const storeRecommendations = internalMutation({
   },
 });
 
-// Get recommendations for a user and category
-export const getRecommendations = query({
-  args: {
-    category: v.string(),
-    limit: v.optional(v.number()),
-  },
-  returns: v.array(
-    v.object({
-      dayOfWeek: v.string(),
-      hour: v.number(),
-      score: v.number(),
-    }),
-  ),
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("User must be authenticated");
-    }
+// // Get recommendations for a user and category
+// export const getRecommendations = query({
+//   args: {
+//     category: v.string(),
+//     limit: v.optional(v.number()),
+//   },
+//   returns: v.array(
+//     v.object({
+//       dayOfWeek: v.string(),
+//       hour: v.number(),
+//       score: v.number(),
+//     }),
+//   ),
+//   handler: async (ctx, args) => {
+//     const userId = await ctx.auth.getUserIdentity();
+//     if (!userId) {
+//       throw new Error("User must be authenticated");
+//     }
 
-    const recommendations = await ctx.db
-      .query("recommendations")
-      .withIndex("by_user_and_category", (q) =>
-        q.eq("userId", userId).eq("category", args.category),
-      )
-      .first();
+//     const recommendations = await ctx.db
+//       .query("recommendations")
+//       .withIndex("by_user_and_category", (q) =>
+//         q.eq("userId", userId).eq("category", args.category),
+//       )
+//       .first();
 
-    if (!recommendations) {
-      // Return default recommendations if none exist
-      return [
-        { dayOfWeek: "Tuesday", hour: 10, score: 0.85 },
-        { dayOfWeek: "Wednesday", hour: 14, score: 0.82 },
-        { dayOfWeek: "Thursday", hour: 9, score: 0.78 },
-        { dayOfWeek: "Tuesday", hour: 15, score: 0.75 },
-        { dayOfWeek: "Wednesday", hour: 11, score: 0.72 },
-      ];
-    }
+//     if (!recommendations) {
+//       // Return default recommendations if none exist
+//       return [
+//         { dayOfWeek: "Tuesday", hour: 10, score: 0.85 },
+//         { dayOfWeek: "Wednesday", hour: 14, score: 0.82 },
+//         { dayOfWeek: "Thursday", hour: 9, score: 0.78 },
+//         { dayOfWeek: "Tuesday", hour: 15, score: 0.75 },
+//         { dayOfWeek: "Wednesday", hour: 11, score: 0.72 },
+//       ];
+//     }
 
-    const limit = args.limit || 10;
-    return recommendations.timeScores
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit);
-  },
-});
+//     const limit = args.limit || 10;
+//     return recommendations.timeScores
+//       .sort((a, b) => b.score - a.score)
+//       .slice(0, limit);
+//   },
+// });
 
 // Trigger recommendation generation for all users (can be called via cron)
 export const generateAllRecommendations = internalAction({
@@ -341,7 +337,7 @@ export const getAllUserCategories = internalQuery({
       category: v.string(),
     }),
   ),
-  handler: async (ctx, args) => {
+  handler: async (ctx) => {
     const campaigns = await ctx.db
       .query("campaigns")
       .filter((q) => q.eq(q.field("status"), "sent"))

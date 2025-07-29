@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import DashboardIcon from "./icons/DashboardIcon";
 import MailIcon from "./icons/MailIcon";
 import AnalyticsIcon from "./icons/AnalyticsIcon";
@@ -13,43 +14,12 @@ export default function Sidebar() {
   const [isCampaignsOpen, setIsCampaignsOpen] = useState(true);
   const pathname = usePathname();
 
-  // Helper function to generate navigation item classes
   const getNavItemClasses = (isActive: boolean) => {
     const baseClasses =
-      "flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors";
+      "flex items-center gap-3 p-3 py-2.5 rounded-lg cursor-pointer transition-all duration-75 ease-in-out";
     const activeClasses = "bg-highlight text-highlight-txt font-medium";
     const inactiveClasses =
       "text-gray-600 hover:bg-highlight hover:text-highlight-txt";
-
-    return `${baseClasses} ${isActive ? activeClasses : inactiveClasses}`;
-  };
-
-  // Helper function for sub-navigation items
-  const getSubNavItemClasses = (isActive: boolean) => {
-    const baseClasses =
-      "flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors";
-    const activeClasses = "bg-blue-50 text-blue-600";
-    const inactiveClasses = "text-gray-600 hover:bg-gray-50";
-
-    return `${baseClasses} ${isActive ? activeClasses : inactiveClasses}`;
-  };
-
-  // Helper function for campaigns dropdown
-  const getCampaignsDropdownClasses = (isActive: boolean) => {
-    const baseClasses =
-      "flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors";
-    const activeClasses = "bg-blue-50 text-blue-600";
-    const inactiveClasses = "text-gray-600 hover:bg-gray-50";
-
-    return `${baseClasses} ${isActive ? activeClasses : inactiveClasses}`;
-  };
-
-  // Helper function for simple sub-navigation items (without justify-between)
-  const getSimpleSubNavItemClasses = (isActive: boolean) => {
-    const baseClasses =
-      "flex items-center p-2 rounded-lg cursor-pointer transition-colors";
-    const activeClasses = "bg-blue-50 text-blue-600";
-    const inactiveClasses = "text-gray-600 hover:bg-gray-50";
 
     return `${baseClasses} ${isActive ? activeClasses : inactiveClasses}`;
   };
@@ -78,20 +48,20 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 space-y-1 px-3">
-        {/* Dashboard */}
-        <div
+        <Link
+          href="/dashboard"
           className={getNavItemClasses(
-            pathname === "/dashboard" || pathname.startsWith("/dashboard"),
+            pathname === "/dashboard" ||
+              (pathname === "/dashboard/" && !pathname.includes("/campaign")),
           )}
         >
           <DashboardIcon className="h-5 w-5" />
           <span className="text-sm">Dashboard</span>
-        </div>
-        {/* Campaigns */}
+        </Link>
+
         <div
-          className={getCampaignsDropdownClasses(
+          className={getNavItemClasses(
             pathname.includes("/campaign") || pathname.includes("/campaigns"),
           )}
           onClick={() => setIsCampaignsOpen(!isCampaignsOpen)}
@@ -107,16 +77,15 @@ export default function Sidebar() {
           />
         </div>
         {isCampaignsOpen && (
-          <div className="mt-2 ml-8 space-y-1">
-            <div
-              className={getSubNavItemClasses(
-                pathname.includes("/campaigns/all"),
-              )}
+          <div className="mt-1 ml-4 flex flex-col gap-1 space-y-1">
+            <Link
+              href="/dashboard/campaigns"
+              className={getNavItemClasses(pathname === "/dashboard/campaigns")}
             >
               <span className="text-sm">All Campaigns</span>
-            </div>
+            </Link>
             <div
-              className={getSubNavItemClasses(
+              className={getNavItemClasses(
                 pathname.includes("/campaigns/drafts"),
               )}
             >
@@ -129,7 +98,7 @@ export default function Sidebar() {
               </span>
             </div>
             <div
-              className={getSubNavItemClasses(
+              className={getNavItemClasses(
                 pathname.includes("/campaigns/scheduled"),
               )}
             >
@@ -142,7 +111,7 @@ export default function Sidebar() {
               </span>
             </div>
             <div
-              className={getSimpleSubNavItemClasses(
+              className={getNavItemClasses(
                 pathname.includes("/campaigns/sent"),
               )}
             >
@@ -150,12 +119,12 @@ export default function Sidebar() {
             </div>
           </div>
         )}
-        {/* Analytics */}
+
         <div className={getNavItemClasses(pathname.includes("/analytics"))}>
           <AnalyticsIcon className="h-5 w-5" />
           <span className="text-sm">Analytics</span>
         </div>
-        {/* Calendar */}
+
         <div
           className={getNavItemClasses(
             pathname.includes("/scheduling") || pathname.includes("/calendar"),
@@ -164,7 +133,7 @@ export default function Sidebar() {
           <CalendarIcon className="h-5 w-5" />
           <span className="text-sm">Scheduling</span>
         </div>
-        {/* Settings */}
+
         <div className={getNavItemClasses(pathname.includes("/settings"))}>
           <SettingsIcon className="h-5 w-5" />
           <span className="text-sm">Settings</span>

@@ -1,13 +1,10 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { authTables } from "@convex-dev/auth/server";
 
 // The schema is normally optional, but Convex Auth
 // requires indexes defined on `authTables`.
 // The schema provides more precise TypeScript types.
 export default defineSchema({
-  ...authTables,
-
   // Campaign data model
   campaigns: defineTable({
     campaignName: v.string(),
@@ -74,7 +71,6 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_and_category", ["userId", "category"]),
 
-  // Legacy table - keeping for backward compatibility
   numbers: defineTable({
     value: v.number(),
   }),

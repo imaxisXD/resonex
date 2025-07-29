@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -17,9 +16,7 @@ export default function Dashboard() {
 
   // Fetch real data from Convex
   const campaigns = useQuery(api.campaigns.getCampaigns, {});
-  const userAnalytics = useQuery(api.events.getUserAnalytics, {
-    timeframe: "30d",
-  });
+  const userAnalytics = undefined;
 
   // Loading states
   if (campaigns === undefined || userAnalytics === undefined) {
@@ -46,7 +43,7 @@ export default function Dashboard() {
         (campaign.prompt.length > 50 ? "..." : ""),
       subjectLines: campaign.subjectLines,
       status: campaign.status,
-      recipients: campaign.recipients.length,
+      recipients: campaign.recipients?.length || 0,
       openRateA: campaign.status === "sent" ? openRateA : undefined,
       openRateB: campaign.status === "sent" ? openRateB : undefined,
       scheduledTime:

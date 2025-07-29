@@ -1,12 +1,8 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 // import { internal } from "./_generated/api";
-import { auth } from "./auth";
 
 const http = httpRouter();
-
-// Auth routes
-auth.addHttpRoutes(http);
 
 // Resend webhook endpoint for email events
 http.route({

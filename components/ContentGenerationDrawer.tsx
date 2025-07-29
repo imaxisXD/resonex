@@ -32,6 +32,8 @@ interface ContentGenerationDrawerProps {
   onTemplateSelect?: (templateInfo: SelectedTemplateInfo) => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  title?: string;
+  hideTitle?: boolean;
 }
 
 export default function ContentGenerationDrawer({
@@ -39,6 +41,7 @@ export default function ContentGenerationDrawer({
   onTemplateSelect,
   open,
   onOpenChange,
+  title,
 }: ContentGenerationDrawerProps) {
   const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
   const [emailHTMLs, setEmailHTMLs] = useState<string[]>([]);
@@ -55,7 +58,6 @@ export default function ContentGenerationDrawer({
       const htmls = await generateAllEmailHTMLs(emailTemplates, campaign);
       setEmailHTMLs(htmls);
     };
-
     generateEmailHTMLs();
   }, [campaign.campaignName, campaign.category]);
 
@@ -110,8 +112,11 @@ export default function ContentGenerationDrawer({
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerTrigger asChild>
-        <Button title="Configure generation settings" className="h-9">
-          <Mail className="size-3" /> Choose a template
+        <Button
+          title="Configure generation settings"
+          className="h-9 w-full rounded-md"
+        >
+          <Mail className="size-4" /> {title || "Choose Template"}
         </Button>
       </DrawerTrigger>
       <DrawerContent className="max-h-[70vh] bg-white">

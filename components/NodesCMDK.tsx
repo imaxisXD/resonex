@@ -25,7 +25,7 @@ interface NodeType {
   id: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  type: "campaignNode" | "labeledNode";
+  type: "campaignNode" | "abTestNode";
   description: string;
 }
 
@@ -62,7 +62,7 @@ const availableNodes: NodeType[] = [
     id: "abtest",
     label: "A/B Test",
     icon: TestTube,
-    type: "labeledNode",
+    type: "abTestNode",
     description: "Split test configuration",
   },
 ];
@@ -94,7 +94,6 @@ export function NodesCMDK({
 
   const handleNodeSelect = (nodeType: NodeType) => {
     if (onAddNode) {
-      // Generate random position for new node
       const position = {
         x: Math.random() * 400,
         y: Math.random() * 300 + 100,
@@ -123,7 +122,7 @@ export function NodesCMDK({
       <p className="text-sm text-white">
         Press{" "}
         <kbd className="bg-muted text-muted-foreground pointer-events-none mx-2 inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none">
-          <span className="text-xs text-black">⌘</span>K
+          <span className="text-black">⌘ K</span>
         </kbd>{" "}
         to add nodes
       </p>

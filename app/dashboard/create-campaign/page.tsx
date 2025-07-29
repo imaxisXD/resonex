@@ -119,11 +119,15 @@ export default function App() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        // fitView
-        // fitViewOptions={{ padding: 0.3, minZoom: 0.5, maxZoom: 1.5 }}
-        // minZoom={0.3}
-        // maxZoom={2}
-        defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+        fitView
+        fitViewOptions={{
+          padding: 0.2,
+          minZoom: 0.2,
+          maxZoom: 1.0,
+          includeHiddenNodes: false,
+        }}
+        minZoom={0.6}
+        maxZoom={1}
       >
         <Controls position="top-right" />
         <MiniMap nodeStrokeWidth={3} />

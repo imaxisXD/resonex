@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const createCampaign = mutation({
   args: {
@@ -10,13 +9,13 @@ export const createCampaign = mutation({
   },
   returns: v.id("campaigns"),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const userId = await ctx.auth.getUserIdentity();
     if (!userId) {
       throw new Error("User must be authenticated");
     }
 
     const campaignId = await ctx.db.insert("campaigns", {
-      userId,
+      userId: userId.subject,
       campaignName: args.campaignName,
       prompt: args.prompt,
       category: args.category,
@@ -28,30 +27,15 @@ export const createCampaign = mutation({
 });
 
 export const getCampaigns = query({
-  args: {
-    status: v.optional(
-      v.union(v.literal("draft"), v.literal("scheduled"), v.literal("sent")),
-    ),
-  },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+  args: {},
+  handler: async (ctx) => {
+    const userId = await ctx.auth.getUserIdentity();
     if (!userId) {
       return [];
     }
-
-    if (args.status) {
-      return await ctx.db
-        .query("campaigns")
-        .withIndex("by_user_and_status", (q) =>
-          q.eq("userId", userId).eq("status", args.status!),
-        )
-        .order("desc")
-        .collect();
-    }
-
     return await ctx.db
       .query("campaigns")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .withIndex("by_user", (q) => q.eq("userId", userId.subject))
       .order("desc")
       .collect();
   },
@@ -61,40 +45,8 @@ export const getCampaign = query({
   args: {
     campaignId: v.string(),
   },
-  returns: v.union(
-    v.object({
-      _id: v.id("campaigns"),
-      _creationTime: v.number(),
-      campaignName: v.string(),
-      userId: v.string(),
-      prompt: v.string(),
-      subjectLines: v.optional(
-        v.object({
-          A: v.string(),
-          B: v.string(),
-        }),
-      ),
-      body: v.optional(v.string()),
-      recipients: v.optional(v.array(v.string())),
-      sendTimeA: v.optional(v.number()),
-      sendTimeB: v.optional(v.number()),
-      status: v.union(
-        v.literal("draft"),
-        v.literal("scheduled"),
-        v.literal("sent"),
-      ),
-      category: v.union(v.literal("newsletter"), v.literal("marketing")),
-      resendEmailIds: v.optional(
-        v.object({
-          A: v.array(v.string()),
-          B: v.array(v.string()),
-        }),
-      ),
-    }),
-    v.null(),
-  ),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const userId = await ctx.auth.getUserIdentity();
     if (!userId) {
       return null;
     }
@@ -103,7 +55,7 @@ export const getCampaign = query({
       return null;
     }
     const campaign = await ctx.db.get(campaignId);
-    if (!campaign || campaign.userId !== userId) {
+    if (!campaign || campaign.userId !== userId.subject) {
       console.log("Campaign not found or access denied");
       return null;
     }
@@ -158,13 +110,13 @@ export const scheduleCampaign = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const userId = await ctx.auth.getUserIdentity();
     if (!userId) {
       throw new Error("User must be authenticated");
     }
 
     const campaign = await ctx.db.get(args.campaignId);
-    if (!campaign || campaign.userId !== userId) {
+    if (!campaign || campaign.userId !== userId.subject) {
       throw new Error("Campaign not found or access denied");
     }
 
