@@ -42,7 +42,6 @@ function CampaignPageContent() {
 
   const handleOutputEdgesChange = useCallback(
     (id: string) => (count: number) => {
-      console.log(`Node ${id} output edges changed to ${count}`);
       updateNodeData(id, { outputEdges: count });
     },
     [updateNodeData],

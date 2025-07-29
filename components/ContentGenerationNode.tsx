@@ -188,14 +188,16 @@ const ContentGenerationNode = memo(
               <BotMessageSquareIcon className="size-5" />
               Generate with AI
             </RainbowButton>
-          ) : (
-            <ContentGenerationDrawer
-              campaign={data.data}
-              onTemplateSelect={handleTemplateSelect}
-              open={isDrawerOpen}
-              onOpenChange={handleDrawerOpenChange}
-            />
-          )}
+          ) : null}
+
+          <ContentGenerationDrawer
+            campaign={data.data}
+            onTemplateSelect={handleTemplateSelect}
+            open={isDrawerOpen}
+            onOpenChange={handleDrawerOpenChange}
+            showTrigger={!selectedTemplate}
+            initialTemplateIndex={selectedTemplate?.templateIndex || 0}
+          />
 
           {generating && (
             <>

@@ -1,7 +1,7 @@
 "use client";
 import { Mail } from "lucide-react";
 import { Doc } from "@/convex/_generated/dataModel";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Drawer,
   DrawerClose,
@@ -34,6 +34,8 @@ interface ContentGenerationDrawerProps {
   onOpenChange?: (open: boolean) => void;
   title?: string;
   hideTitle?: boolean;
+  showTrigger?: boolean;
+  initialTemplateIndex?: number;
 }
 
 export default function ContentGenerationDrawer({
@@ -42,14 +44,18 @@ export default function ContentGenerationDrawer({
   open,
   onOpenChange,
   title,
+  showTrigger = true,
+  initialTemplateIndex = 0,
 }: ContentGenerationDrawerProps) {
-  const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
+  const [selectedTemplateIndex, setSelectedTemplateIndex] =
+    useState(initialTemplateIndex);
   const [emailHTMLs, setEmailHTMLs] = useState<string[]>([]);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [previewTemplateIndex, setPreviewTemplateIndex] = useState<
     number | null
   >(null);
+  const initializingRef = useRef(false);
 
   const emailTemplates = getEmailTemplates(campaign);
 
@@ -62,14 +68,30 @@ export default function ContentGenerationDrawer({
   }, [campaign.campaignName, campaign.category]);
 
   useEffect(() => {
+    if (open && carouselApi && !initializingRef.current) {
+      initializingRef.current = true;
+      setSelectedTemplateIndex(initialTemplateIndex);
+      carouselApi.scrollTo(initialTemplateIndex);
+      setTimeout(() => (initializingRef.current = false), 150);
+    }
+  }, [open, carouselApi, initialTemplateIndex]);
+
+  useEffect(() => {
+    if (!open) {
+      initializingRef.current = false;
+    }
+  }, [open]);
+
+  useEffect(() => {
     if (!carouselApi) return;
 
     const onSelect = () => {
-      setSelectedTemplateIndex(carouselApi.selectedScrollSnap());
+      if (!initializingRef.current) {
+        setSelectedTemplateIndex(carouselApi.selectedScrollSnap());
+      }
     };
 
     carouselApi.on("select", onSelect);
-    onSelect();
 
     return () => {
       carouselApi.off("select", onSelect);
@@ -111,14 +133,16 @@ export default function ContentGenerationDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerTrigger asChild>
-        <Button
-          title="Configure generation settings"
-          className="h-9 w-full rounded-md"
-        >
-          <Mail className="size-4" /> {title || "Choose Template"}
-        </Button>
-      </DrawerTrigger>
+      {showTrigger && (
+        <DrawerTrigger asChild>
+          <Button
+            title="Configure generation settings"
+            className="h-9 w-full rounded-md"
+          >
+            <Mail className="size-4" /> {title || "Choose Template"}
+          </Button>
+        </DrawerTrigger>
+      )}
       <DrawerContent className="max-h-[70vh] bg-white">
         <DrawerHeader>
           <DrawerTitle>Email Templates</DrawerTitle>
