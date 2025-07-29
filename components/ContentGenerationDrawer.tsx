@@ -65,6 +65,7 @@ export default function ContentGenerationDrawer({
       setEmailHTMLs(htmls);
     };
     generateEmailHTMLs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaign.campaignName, campaign.category]);
 
   useEffect(() => {

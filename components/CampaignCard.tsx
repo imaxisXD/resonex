@@ -1,15 +1,7 @@
+import { Doc } from "@/convex/_generated/dataModel";
+
 interface CampaignCardProps {
-  campaign: {
-    id: string;
-    title: string;
-    subjectLines: { A: string; B: string };
-    status: "draft" | "scheduled" | "sent";
-    recipients: number;
-    openRateA?: number;
-    openRateB?: number;
-    scheduledTime?: string;
-    category: string;
-  };
+  campaign: Doc<"campaigns">;
 }
 
 export default function CampaignCard({ campaign }: CampaignCardProps) {
@@ -39,7 +31,9 @@ export default function CampaignCard({ campaign }: CampaignCardProps) {
     <div className="rounded-lg border border-gray-200 bg-white p-6 transition-shadow hover:shadow-md">
       <div className="mb-4 flex items-start justify-between">
         <div>
-          <h3 className="mb-1 font-semibold text-gray-900">{campaign.title}</h3>
+          <h3 className="mb-1 font-semibold text-gray-900">
+            {campaign.campaignName}
+          </h3>
           <p className="text-sm text-gray-500">{campaign.category}</p>
         </div>
         <span
@@ -54,9 +48,9 @@ export default function CampaignCard({ campaign }: CampaignCardProps) {
         {/* <span className="text-gray-500">
           {campaign.recipients.toLocaleString()} recipients
         </span> */}
-        {campaign.scheduledTime && campaign.status === "scheduled" && (
+        {campaign.sendTimeA && campaign.status === "scheduled" && (
           <span className="font-medium" style={{ color: "#8D2676" }}>
-            {campaign.scheduledTime}
+            {campaign.sendTimeA}
           </span>
         )}
       </div>
