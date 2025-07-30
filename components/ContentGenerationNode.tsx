@@ -23,7 +23,6 @@ interface SelectedTemplateInfo {
 interface ContentGenerationNodeData {
   label: string;
   data: Doc<"campaigns">;
-  status?: "completed" | "pending" | "disabled";
 }
 
 interface ContentGenerationNodeProps {
@@ -42,20 +41,18 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const statusColor = useMemo(() => {
-    switch (data.status) {
-      case "completed":
-        return "border-green-500 bg-green-50/80";
-      case "pending":
-        return "bg-white/90";
-      case "disabled":
-        return "border-gray-300 bg-gray-50/80";
-      default:
-        return "border-blue-500 bg-blue-50/80";
+    if (selectedTemplate) {
+      return "border-green-500 bg-green-50/80";
+    } else {
+      return "bg-white/90";
     }
-  }, [data.status]);
+  }, [selectedTemplate]);
 
   const nodeLabel = useMemo(() => data.label, [data.label]);
-  const nodeStatus = useMemo(() => data.status || "ready", [data.status]);
+  const nodeStatus = useMemo(
+    () => (selectedTemplate ? "ready" : "pending"),
+    [selectedTemplate],
+  );
 
   const handleTemplateSelect = useCallback(
     (templateInfo: SelectedTemplateInfo) => {
@@ -260,11 +257,23 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
           type="target"
           position={Position.Top}
           className="-top-1.5 h-3 w-3 border-2 border-white bg-blue-500"
+          style={{
+            background: "var(--color-blue-500)",
+            height: "10px",
+            width: "10px",
+            border: "1px solid var(--color-blue-700)",
+          }}
         />
         <Handle
           type="source"
           position={Position.Bottom}
           className="-bottom-1.5 h-3 w-3 border-2 border-white bg-blue-500"
+          style={{
+            background: "var(--color-blue-500)",
+            height: "10px",
+            width: "10px",
+            border: "1px solid var(--color-blue-700)",
+          }}
         />
       </div>
     </div>

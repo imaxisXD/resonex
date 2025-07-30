@@ -1,10 +1,6 @@
 import { v } from "convex/values";
-import {
-  action,
-  internalAction,
-  internalMutation,
-  internalQuery,
-} from "./_generated/server";
+import { action, internalMutation, internalQuery } from "./_generated/server";
+import { vOnCompleteValidator } from "@convex-dev/workpool";
 
 // Internal query to get campaign for sending
 export const getCampaignForSending = internalQuery({
@@ -92,5 +88,16 @@ export const importRecipients = action({
       recipients,
       errors,
     };
+  },
+});
+
+export const emailOnComplete = internalMutation({
+  args: vOnCompleteValidator(v.object({ emailId: v.id("emails") })),
+  handler: async (ctx, { context, result }) => {
+    if (result.kind === "canceled" || result.kind === "failed") return;
+
+    await ctx.db.patch(context, {
+      status: "draft",
+    });
   },
 });

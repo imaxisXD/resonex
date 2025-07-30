@@ -1,25 +1,12 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
-// The schema is normally optional, but Convex Auth
-// requires indexes defined on `authTables`.
-// The schema provides more precise TypeScript types.
 export default defineSchema({
-  // Campaign data model
   campaigns: defineTable({
     campaignName: v.string(),
     userId: v.string(),
     prompt: v.string(),
-    subjectLines: v.optional(
-      v.object({
-        A: v.string(),
-        B: v.string(),
-      }),
-    ),
-    body: v.optional(v.string()),
     recipients: v.optional(v.array(v.string())),
-    sendTimeA: v.optional(v.number()),
-    sendTimeB: v.optional(v.number()),
     status: v.union(
       v.literal("draft"),
       v.literal("scheduled"),
@@ -32,12 +19,29 @@ export default defineSchema({
         B: v.array(v.string()),
       }),
     ),
+    emailIds: v.optional(v.array(v.id("emails"))),
   })
     .index("by_user", ["userId"])
     .index("by_status", ["status"])
-    .index("by_user_and_status", ["userId", "status"]),
+    .index("by_user_and_status", ["userId", "status"])
+    .index("by_email_ids", ["emailIds"]),
 
-  // Email event tracking
+  emails: defineTable({
+    campaignId: v.id("campaigns"),
+    body: v.string(),
+    subjectLine: v.string(),
+    sendTime: v.optional(v.number()),
+    resendEmailIds: v.optional(v.array(v.string())),
+    status: v.union(
+      v.literal("draft"),
+      v.literal("scheduled"),
+      v.literal("sent"),
+      v.literal("generating"),
+    ),
+  })
+    .index("by_campaign", ["campaignId"])
+    .index("by_status", ["status"]),
+
   events: defineTable({
     emailId: v.string(),
     campaignId: v.id("campaigns"),
@@ -56,6 +60,35 @@ export default defineSchema({
     .index("by_campaign_and_variant", ["campaignId", "variant"])
     .index("by_type", ["type"]),
 
+  reactFlowCanvas: defineTable({
+    campaignId: v.id("campaigns"),
+    nodes: v.array(
+      v.object({
+        id: v.string(),
+        type: v.string(),
+        position: v.object({ x: v.number(), y: v.number() }),
+        data: v.any(),
+        measured: v.object({
+          width: v.number(),
+          height: v.number(),
+        }),
+        // Only store essential layout properties
+        hidden: v.optional(v.boolean()),
+        zIndex: v.optional(v.number()),
+      }),
+    ),
+    edges: v.array(
+      v.object({
+        id: v.string(),
+        source: v.string(),
+        target: v.string(),
+        sourceHandle: v.optional(v.string()),
+        targetHandle: v.optional(v.string()),
+        type: v.optional(v.string()),
+        label: v.optional(v.string()),
+      }),
+    ),
+  }).index("by_campaign", ["campaignId"]),
   // Time-based recommendations
   recommendations: defineTable({
     userId: v.string(),
@@ -70,8 +103,4 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_user_and_category", ["userId", "category"]),
-
-  numbers: defineTable({
-    value: v.number(),
-  }),
 });

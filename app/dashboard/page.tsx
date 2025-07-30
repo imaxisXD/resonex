@@ -1,11 +1,7 @@
 "use client";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+
 import MetricDashboard from "@/components/MetricDashboard";
-import CampaignCard from "@/components/CampaignCard";
-import PerformanceChart from "@/components/PerformanceChart";
-import RecentActivity from "@/components/RecentActivity";
+
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
@@ -23,38 +19,38 @@ export default function Dashboard() {
     return <DashboardSkeleton />;
   }
 
-  // Transform campaigns data for CampaignCard component
-  const transformedCampaigns = campaigns.slice(0, 4).map((campaign) => {
-    // Calculate analytics for sent campaigns
-    let openRateA = 0,
-      openRateB = 0;
+  // // Transform campaigns data for CampaignCard component
+  // const transformedCampaigns = campaigns.slice(0, 4).map((campaign) => {
+  //   // Calculate analytics for sent campaigns
+  //   let openRateA = 0,
+  //     openRateB = 0;
 
-    if (campaign.status === "sent") {
-      // Note: In a real implementation, you'd fetch campaign-specific analytics
-      // For now, using placeholder values
-      openRateA = Math.random() * 40 + 10; // 10-50%
-      openRateB = Math.random() * 40 + 10; // 10-50%
-    }
+  //   if (campaign.status === "sent") {
+  //     // Note: In a real implementation, you'd fetch campaign-specific analytics
+  //     // For now, using placeholder values
+  //     openRateA = Math.random() * 40 + 10; // 10-50%
+  //     openRateB = Math.random() * 40 + 10; // 10-50%
+  //   }
 
-    return {
-      id: campaign._id,
-      title:
-        campaign.prompt.slice(0, 50) +
-        (campaign.prompt.length > 50 ? "..." : ""),
-      subjectLines: campaign.subjectLines,
-      status: campaign.status,
-      recipients: campaign.recipients?.length || 0,
-      openRateA: campaign.status === "sent" ? openRateA : undefined,
-      openRateB: campaign.status === "sent" ? openRateB : undefined,
-      scheduledTime:
-        campaign.status === "scheduled" && campaign.sendTimeA
-          ? new Date(campaign.sendTimeA).toLocaleDateString() +
-            " " +
-            new Date(campaign.sendTimeA).toLocaleTimeString()
-          : undefined,
-      category: campaign.category,
-    };
-  });
+  //   return {
+  //     id: campaign._id,
+  //     title:
+  //       campaign.prompt.slice(0, 50) +
+  //       (campaign.prompt.length > 50 ? "..." : ""),
+  //     subjectLines: " campaign.subjectLines",
+  //     status: campaign.status,
+  //     recipients: campaign.recipients?.length || 0,
+  //     openRateA: campaign.status === "sent" ? openRateA : undefined,
+  //     openRateB: campaign.status === "sent" ? openRateB : undefined,
+  //     scheduledTime:
+  //       campaign.status === "scheduled" && campaign.sendTimeA
+  //         ? new Date(campaign.sendTimeA).toLocaleDateString() +
+  //           " " +
+  //           new Date(campaign.sendTimeA).toLocaleTimeString()
+  //         : undefined,
+  //     category: campaign.category,
+  //   };
+  // });
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-8 pb-10">
@@ -81,7 +77,7 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {transformedCampaigns.length === 0 ? (
+          {/* {transformedCampaigns.length === 0 ? (
             <div className="rounded-lg bg-gray-50 p-8 text-center">
               <h3 className="mb-2 text-lg font-medium text-gray-900">
                 No campaigns yet
@@ -99,12 +95,12 @@ export default function Dashboard() {
                 <CampaignCard key={campaign.id} campaign={campaign} />
               ))}
             </div>
-          )}
+          )} */}
         </div>
 
         <div className="space-y-6">
-          <PerformanceChart campaigns={transformedCampaigns} />
-          <RecentActivity activities={userAnalytics.recentActivity} />
+          {/* <PerformanceChart campaigns={transformedCampaigns} />
+          <RecentActivity activities={userAnalytics.recentActivity} /> */}
         </div>
       </div>
 
@@ -119,7 +115,7 @@ export default function Dashboard() {
             </h3>
             <p className="text-3xl font-bold text-blue-700">Tuesday</p>
             <p className="mt-1 text-sm text-blue-600">
-              {userAnalytics.averageOpenRate.toFixed(1)}% avg open rate
+              {/* {userAnalytics.averageOpenRate.toFixed(1)}% avg open rate */}
             </p>
           </div>
           <div className="rounded-lg border border-green-200 bg-gradient-to-br from-green-50 to-green-100 p-6">
@@ -136,7 +132,7 @@ export default function Dashboard() {
               A/B Test Winner
             </h3>
             <p className="text-3xl font-bold text-purple-700">
-              {userAnalytics.abTestUplift.toFixed(1)}%
+              {/* {userAnalytics.abTestUplift.toFixed(1)}% */}
             </p>
             <p className="mt-1 text-sm text-purple-600">
               Average uplift from testing

@@ -102,57 +102,57 @@ export const getCampaign = query({
 //   },
 // });
 
-export const scheduleCampaign = mutation({
-  args: {
-    campaignId: v.id("campaigns"),
-    sendTimeA: v.number(),
-    sendTimeB: v.number(),
-  },
-  returns: v.null(),
-  handler: async (ctx, args) => {
-    const userId = await ctx.auth.getUserIdentity();
-    if (!userId) {
-      throw new Error("User must be authenticated");
-    }
+// export const scheduleCampaign = mutation({
+//   args: {
+//     campaignId: v.id("campaigns"),
+//     sendTimeA: v.number(),
+//     sendTimeB: v.number(),
+//   },
+//   returns: v.null(),
+//   handler: async (ctx, args) => {
+//     const userId = await ctx.auth.getUserIdentity();
+//     if (!userId) {
+//       throw new Error("User must be authenticated");
+//     }
 
-    const campaign = await ctx.db.get(args.campaignId);
-    if (!campaign || campaign.userId !== userId.subject) {
-      throw new Error("Campaign not found or access denied");
-    }
+//     const campaign = await ctx.db.get(args.campaignId);
+//     if (!campaign || campaign.userId !== userId.subject) {
+//       throw new Error("Campaign not found or access denied");
+//     }
 
-    if (campaign.status !== "draft") {
-      throw new Error("Only draft campaigns can be scheduled");
-    }
+//     if (campaign.status !== "draft") {
+//       throw new Error("Only draft campaigns can be scheduled");
+//     }
 
-    await ctx.db.patch(args.campaignId, {
-      sendTimeA: args.sendTimeA,
-      sendTimeB: args.sendTimeB,
-      status: "scheduled",
-    });
+//     await ctx.db.patch(args.campaignId, {
+//       sendTimeA: args.sendTimeA,
+//       sendTimeB: args.sendTimeB,
+//       status: "scheduled",
+//     });
 
-    // Schedule the actual email sends
-    // await ctx.scheduler.runAt(
-    //   args.sendTimeA,
-    //   internal.externalActions.sendCampaignBatch,
-    //   {
-    //     campaignId: args.campaignId,
-    //     variant: "A",
-    //   },
-    // );
+//     // Schedule the actual email sends
+//     // await ctx.scheduler.runAt(
+//     //   args.sendTimeA,
+//     //   internal.externalActions.sendCampaignBatch,
+//     //   {
+//     //     campaignId: args.campaignId,
+//     //     variant: "A",
+//     //   },
+//     // );
 
-    // Schedule variant B 1 hour after variant A for A/B testing
-    // await ctx.scheduler.runAt(
-    //   args.sendTimeB,
-    //   internal.externalActions.sendCampaignBatch,
-    //   {
-    //     campaignId: args.campaignId,
-    //     variant: "B",
-    //   },
-    // );
+//     // Schedule variant B 1 hour after variant A for A/B testing
+//     // await ctx.scheduler.runAt(
+//     //   args.sendTimeB,
+//     //   internal.externalActions.sendCampaignBatch,
+//     //   {
+//     //     campaignId: args.campaignId,
+//     //     variant: "B",
+//     //   },
+//     // );
 
-    return null;
-  },
-});
+//     return null;
+//   },
+// });
 
 // // Get campaign analytics
 // export const getCampaignAnalytics = query({

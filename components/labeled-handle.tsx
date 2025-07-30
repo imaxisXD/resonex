@@ -17,28 +17,29 @@ export const LabeledHandle = forwardRef<
     HTMLAttributes<HTMLDivElement> & {
       title: string;
       handleClassName?: string;
-      labelClassName?: string;
     }
->(
-  (
-    { className, labelClassName, handleClassName, title, position, ...props },
-    ref,
-  ) => (
-    <div
-      ref={ref}
-      title={title}
-      className={cn(
-        "relative flex items-center",
-        flexDirections[position],
-        className,
-      )}
-    >
-      <BaseHandle position={position} className={handleClassName} {...props} />
-      <label className={cn("text-foreground px-3 py-0", labelClassName)}>
-        {title}
-      </label>
-    </div>
-  ),
-);
+>(({ className, handleClassName, title, position, ...props }, ref) => (
+  <div
+    ref={ref}
+    title={title}
+    className={cn(
+      "relative flex items-center",
+      flexDirections[position],
+      className,
+    )}
+  >
+    <BaseHandle
+      position={position}
+      className={handleClassName}
+      {...props}
+      style={{
+        background: "var(--color-blue-500)",
+        height: "10px",
+        width: "10px",
+        border: "1px solid var(--color-blue-700)",
+      }}
+    />
+  </div>
+));
 
 LabeledHandle.displayName = "LabeledHandle";

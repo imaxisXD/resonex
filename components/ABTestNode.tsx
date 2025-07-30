@@ -1,5 +1,5 @@
-import { memo, useState } from "react";
-import { Position } from "@xyflow/react";
+import { memo, useState, useEffect } from "react";
+import { Position, useNodeConnections } from "@xyflow/react";
 import { LabeledHandle } from "@/components/labeled-handle";
 import {
   BaseNode,
@@ -17,15 +17,30 @@ const ABTestNode = memo(function ABTestNode({
   title,
   target,
   onOutputEdgesChange,
+  data,
 }: {
   title: string;
   target: string;
   onOutputEdgesChange?: (count: number) => void;
+  data?: { outputEdges?: number };
 }) {
   const [appendixVisible, setAppendixVisible] = useState(false);
-  const [outputEdges, setOutputEdges] = useState(2);
-  const [inputValue, setInputValue] = useState("2");
+  const [outputEdges, setOutputEdges] = useState(data?.outputEdges || 2);
+  const [inputValue, setInputValue] = useState(
+    (data?.outputEdges || 2).toString(),
+  );
   const [errorMessage, setErrorMessage] = useState("");
+  const connections = useNodeConnections({
+    handleType: "source",
+    handleId: `${target}-output`,
+  });
+
+  useEffect(() => {
+    if (data?.outputEdges) {
+      setOutputEdges(data.outputEdges);
+      setInputValue(data.outputEdges.toString());
+    }
+  }, [data?.outputEdges]);
 
   const validateInput = (value: string): string => {
     if (value === "") {
@@ -35,8 +50,8 @@ const ABTestNode = memo(function ABTestNode({
       return "Only numbers are allowed";
     }
     const numValue = parseInt(value);
-    if (numValue < 1) {
-      return "Minimum value is 1";
+    if (numValue < 2) {
+      return "Minimum value is 2";
     }
     if (numValue > 10) {
       return "Maximum value is 10";
@@ -102,7 +117,7 @@ const ABTestNode = memo(function ABTestNode({
                   value={inputValue}
                   onChange={handleTempOutputEdgesChange}
                   className={`w-full pr-10 ${errorMessage ? "border-red-500 focus:border-red-500" : ""}`}
-                  placeholder="Enter 1-10"
+                  placeholder="Enter 2-10"
                 />
                 {errorMessage && (
                   <div className="mt-1 text-xs text-red-500">
@@ -134,7 +149,6 @@ const ABTestNode = memo(function ABTestNode({
           position={Position.Top}
           handleClassName="!absolute !-top-1 !left-1/2 !-translate-x-1/2 !-translate-y-1/2"
           className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2"
-          labelClassName="sr-only"
         />
 
         <LabeledHandle
@@ -143,7 +157,6 @@ const ABTestNode = memo(function ABTestNode({
           type="source"
           position={Position.Bottom}
           className="pointer-events-auto absolute bottom-[-10px] left-[49%]"
-          labelClassName="sr-only"
         />
 
         <BaseNodeHeader>
@@ -152,7 +165,7 @@ const ABTestNode = memo(function ABTestNode({
               <TestTubeDiagonalIcon className="size-5 fill-emerald-100 text-green-600" />
             </div>
             <span className="text-sm font-semibold">
-              {title} ({outputEdges})
+              {title} ({connections.length}/{outputEdges})
             </span>
           </BaseNodeHeaderTitle>
           <Button

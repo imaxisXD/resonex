@@ -20,6 +20,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
+import { useNodes } from "@xyflow/react";
 
 interface NodeType {
   id: string;
@@ -84,6 +85,7 @@ export function NodesCMDK({
   onResetToDefault,
 }: NodesCMDKProps) {
   const [open, setOpen] = React.useState(false);
+  const currentNodes = useNodes();
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -136,24 +138,39 @@ export function NodesCMDK({
         <CommandList>
           <CommandEmpty>No nodes found.</CommandEmpty>
           <CommandGroup heading="Available Nodes">
-            {availableNodes.map((node) => {
-              const IconComponent = node.icon;
-              return (
-                <CommandItem
-                  key={node.id}
-                  onSelect={() => handleNodeSelect(node)}
-                  className="cursor-pointer"
-                >
-                  <IconComponent className="mr-2 h-4 w-4" />
-                  <div className="flex flex-col">
-                    <span className="font-medium">{node.label}</span>
-                    <span className="text-muted-foreground text-xs">
-                      {node.description}
-                    </span>
-                  </div>
-                </CommandItem>
-              );
-            })}
+            {availableNodes
+              .filter((node) => {
+                // Only prevent duplicates for specific node types
+                const restrictedTypes = [
+                  "analyticsNode",
+                  "scheduleNode",
+                  "campaignNode",
+                  "abTestNode",
+                ];
+                if (restrictedTypes.includes(node.type)) {
+                  return !currentNodes.some((n) => n.type === node.type);
+                }
+                // Allow multiple instances of other node types
+                return true;
+              })
+              .map((node) => {
+                const IconComponent = node.icon;
+                return (
+                  <CommandItem
+                    key={node.id}
+                    onSelect={() => handleNodeSelect(node)}
+                    className="cursor-pointer"
+                  >
+                    <IconComponent className="mr-2 h-4 w-4" />
+                    <div className="flex flex-col">
+                      <span className="font-medium">{node.label}</span>
+                      <span className="text-muted-foreground text-xs">
+                        {node.description}
+                      </span>
+                    </div>
+                  </CommandItem>
+                );
+              })}
           </CommandGroup>
           <CommandSeparator />
           <CommandGroup heading="Actions">

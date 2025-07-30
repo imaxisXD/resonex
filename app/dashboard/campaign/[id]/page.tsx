@@ -13,9 +13,11 @@ import {
   addEdge,
   useReactFlow,
   type Connection,
+  type Node,
+  type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useParams } from "next/navigation";
 import ABTestNode from "@/components/ABTestNode";
@@ -34,10 +36,33 @@ interface ABTestNodeData {
   outputEdges?: number;
 }
 
+type ExtendedNodeProps = {
+  measured?: {
+    width: number;
+    height: number;
+  };
+
+  hidden?: boolean;
+  zIndex?: number;
+};
+
+type ExtendedEdgeProps = {
+  sourceHandle?: string;
+  targetHandle?: string;
+  label?: string;
+};
+
 function CampaignPageContent() {
   const params = useParams();
   const campaignId = params.id as string;
   const campaign = useQuery(api.campaigns.getCampaign, { campaignId });
+
+  const savedCanvas = useQuery(
+    api.reactFlowCanvas.loadCanvas,
+    campaign ? { campaignId: campaign?._id } : "skip",
+  );
+  const saveCanvas = useMutation(api.reactFlowCanvas.saveCanvas);
+
   const { updateNodeData } = useReactFlow();
 
   const handleOutputEdgesChange = useCallback(
@@ -53,6 +78,7 @@ function CampaignPageContent() {
         <ABTestNode
           title={data.title}
           target={data.target}
+          data={data}
           onOutputEdgesChange={handleOutputEdgesChange(id)}
         />
       );
@@ -102,8 +128,6 @@ function CampaignPageContent() {
         data: {
           label: "Content Generation",
           data: campaign,
-          status:
-            campaign.body || campaign.subjectLines ? "completed" : "pending",
         },
         type: "contentGenerationNode",
       },
@@ -113,8 +137,6 @@ function CampaignPageContent() {
         data: {
           label: "Content Generation",
           data: campaign,
-          status:
-            campaign.body || campaign.subjectLines ? "completed" : "pending",
         },
         type: "contentGenerationNode",
       },
@@ -176,12 +198,62 @@ function CampaignPageContent() {
 
   const { isValidConnection } = useConnectionRules(nodes, edges);
 
+  const handleSaveCanvas = useCallback(async () => {
+    if (campaignId && nodes.length > 0) {
+      try {
+        await saveCanvas({
+          campaignId:
+            campaignId as import("@/convex/_generated/dataModel").Id<"campaigns">,
+          nodes: nodes.map((node) => {
+            const extendedNode = node as Node & ExtendedNodeProps;
+            return {
+              id: node.id,
+              type: node.type,
+              position: node.position,
+              data: node.data,
+              measured: extendedNode.measured || { width: 200, height: 100 },
+              hidden: extendedNode.hidden,
+              zIndex: extendedNode.zIndex,
+            };
+          }),
+          edges: edges.map((edge) => {
+            const extendedProps = edge as Edge & ExtendedEdgeProps;
+            return {
+              id: edge.id,
+              source: edge.source,
+              target: edge.target,
+              sourceHandle: extendedProps.sourceHandle,
+              targetHandle: extendedProps.targetHandle,
+              type: extendedProps.type,
+              label: extendedProps.label,
+            };
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to save canvas:", error);
+      }
+    }
+  }, [campaignId, nodes, edges, saveCanvas]);
+
   useEffect(() => {
-    if (campaign) {
+    if (savedCanvas?.nodes && savedCanvas?.edges) {
+      setNodes(savedCanvas.nodes);
+      setEdges(savedCanvas.edges);
+    } else if (campaign && initialNodes.length > 0) {
       setNodes(initialNodes);
       setEdges(initialEdges);
     }
-  }, [campaign, initialNodes, initialEdges, setNodes, setEdges]);
+  }, [savedCanvas, campaign, initialNodes, initialEdges, setNodes, setEdges]);
+
+  useEffect(() => {
+    if (nodes.length === 0) return;
+
+    const timeoutId = setTimeout(() => {
+      handleSaveCanvas();
+    }, 2000); // Save 2 seconds after last change
+
+    return () => clearTimeout(timeoutId);
+  }, [nodes, edges, handleSaveCanvas]);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -260,51 +332,76 @@ function CampaignPageContent() {
 
       if (newNode) {
         setNodes((nds) => [...nds, newNode]);
+        // Save after adding new node
+        setTimeout(() => handleSaveCanvas(), 100);
       }
     },
-    [campaign, setNodes],
+    [campaign, setNodes, handleSaveCanvas],
   );
 
-  const onClearAll = useCallback(() => {
+  const onClearAll = useCallback(async () => {
     setNodes([]);
     setEdges([]);
-  }, [setNodes, setEdges]);
+    setTimeout(() => handleSaveCanvas(), 100);
+  }, [setNodes, setEdges, handleSaveCanvas]);
 
-  const onResetToDefault = useCallback(() => {
+  const onResetToDefault = useCallback(async () => {
     if (campaign) {
       setNodes(initialNodes);
       setEdges(initialEdges);
+      setTimeout(() => handleSaveCanvas(), 100);
     }
-  }, [campaign, initialNodes, initialEdges, setNodes, setEdges]);
+  }, [
+    campaign,
+    initialNodes,
+    initialEdges,
+    setNodes,
+    setEdges,
+    handleSaveCanvas,
+  ]);
 
   const styledEdges = useMemo(
     () =>
       edges.map((edge) => {
-        const sourceNode = nodes.find((n) => n.id === edge.source);
-        const isTranscriptionEdge = sourceNode?.type === "transcription";
+        // const sourceNode = nodes.find((n) => n.id === edge.source);
 
         return {
           ...edge,
           animated: true,
           style: {
-            stroke: isTranscriptionEdge
-              ? "var(--color-convex-yellow)"
-              : "var(--color-convex-purple)",
-            strokeWidth: isTranscriptionEdge ? 3 : 1.8,
-            strokeOpacity: isTranscriptionEdge ? 0.7 : 0.5,
+            stroke: "var(--color-convex-purple)",
+            strokeWidth: 1.8,
+            strokeOpacity: 0.7,
           },
           markerEnd: {
             type: MarkerType.ArrowClosed,
-            color: isTranscriptionEdge
-              ? "var(--color-convex-yellow)"
-              : "var(--color-convex-purple)",
-            width: 14,
-            height: 14,
+            color: "var(--color-convex-purple)",
+            width: 18,
+            height: 18,
           },
         };
       }),
     [edges, nodes],
   );
+
+  if (!campaign) return null;
+
+  function nodeColor(node: Node) {
+    switch (node.type) {
+      case "campaignNode":
+        return "var(--color-blue-400)";
+      case "scheduleNode":
+        return "var(--color-green-500)";
+      case "analyticsNode":
+        return "var(--color-pink-400)";
+      case "abTestNode":
+        return "var(--color-yellow-400)";
+      case "contentGenerationNode":
+        return "var(--color-purple-400)";
+      default:
+        return "var(--color-emerald-400)";
+    }
+  }
 
   return (
     <div className="relative h-full">
@@ -334,13 +431,13 @@ function CampaignPageContent() {
         maxZoom={1}
       >
         <Controls position="top-right" />
-        <MiniMap nodeStrokeWidth={2} />
+        <MiniMap nodeColor={nodeColor} />
         <Background
           variant={BackgroundVariant.Dots}
           gap={10}
           size={1}
           color="#94a3b8"
-          style={{ opacity: 0.4 }}
+          style={{ opacity: 0.5 }}
         />
       </ReactFlow>
     </div>

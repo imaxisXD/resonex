@@ -7,152 +7,152 @@ import {
 import { internal } from "./_generated/api";
 
 // Generate time-based recommendations for a user
-export const generateRecommendations = internalAction({
-  args: {
-    userId: v.string(),
-    category: v.string(),
-  },
-  returns: v.null(),
-  handler: async (ctx, args) => {
-    // Get all sent campaigns for this user and category
-    const campaigns = await ctx.runQuery(
-      internal.recommendations.getUserCampaigns,
-      {
-        userId: args.userId,
-        category: args.category,
-      },
-    );
+// export const generateRecommendations = internalAction({
+//   args: {
+//     userId: v.string(),
+//     category: v.string(),
+//   },
+//   returns: v.null(),
+//   handler: async (ctx, args) => {
+//     // Get all sent campaigns for this user and category
+//     const campaigns = await ctx.runQuery(
+//       internal.recommendations.getUserCampaigns,
+//       {
+//         userId: args.userId,
+//         category: args.category,
+//       },
+//     );
 
-    if (campaigns.length === 0) {
-      console.log(
-        `No campaigns found for user ${args.userId} in category ${args.category}`,
-      );
-      return null;
-    }
+//     if (campaigns.length === 0) {
+//       console.log(
+//         `No campaigns found for user ${args.userId} in category ${args.category}`,
+//       );
+//       return null;
+//     }
 
-    // Initialize time slot scores (7 days x 24 hours = 168 slots)
-    const timeScores: Array<{
-      dayOfWeek: string;
-      hour: number;
-      score: number;
-    }> = [];
-    const dayNames = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
+//     // Initialize time slot scores (7 days x 24 hours = 168 slots)
+//     const timeScores: Array<{
+//       dayOfWeek: string;
+//       hour: number;
+//       score: number;
+//     }> = [];
+//     const dayNames = [
+//       "Sunday",
+//       "Monday",
+//       "Tuesday",
+//       "Wednesday",
+//       "Thursday",
+//       "Friday",
+//       "Saturday",
+//     ];
 
-    for (let day = 0; day < 7; day++) {
-      for (let hour = 0; hour < 24; hour++) {
-        timeScores.push({
-          dayOfWeek: dayNames[day],
-          hour,
-          score: 0,
-        });
-      }
-    }
+//     for (let day = 0; day < 7; day++) {
+//       for (let hour = 0; hour < 24; hour++) {
+//         timeScores.push({
+//           dayOfWeek: dayNames[day],
+//           hour,
+//           score: 0,
+//         });
+//       }
+//     }
 
-    // Calculate scores based on campaign performance
-    for (const campaign of campaigns) {
-      if (!campaign.sendTimeA || !campaign.sendTimeB) continue;
+//     // Calculate scores based on campaign performance
+//     for (const campaign of campaigns) {
+//       if (!campaign.sendTimeA || !campaign.sendTimeB) continue;
 
-      // Get analytics for this campaign
-      const analytics = await ctx.runQuery(
-        internal.recommendations.getCampaignPerformance,
-        {
-          campaignId: campaign._id,
-        },
-      );
+//       // Get analytics for this campaign
+//       const analytics = await ctx.runQuery(
+//         internal.recommendations.getCampaignPerformance,
+//         {
+//           campaignId: campaign._id,
+//         },
+//       );
 
-      // Process both variants
-      const variants = [
-        { time: campaign.sendTimeA, performance: analytics.variantA },
-        { time: campaign.sendTimeB, performance: analytics.variantB },
-      ];
+//       // Process both variants
+//       const variants = [
+//         { time: campaign.sendTimeA, performance: analytics.variantA },
+//         { time: campaign.sendTimeB, performance: analytics.variantB },
+//       ];
 
-      for (const variant of variants) {
-        const sendDate = new Date(variant.time);
-        const dayOfWeek = sendDate.getDay();
-        const hour = sendDate.getHours();
+//       for (const variant of variants) {
+//         const sendDate = new Date(variant.time);
+//         const dayOfWeek = sendDate.getDay();
+//         const hour = sendDate.getHours();
 
-        // Find the matching time slot
-        const timeSlot = timeScores.find(
-          (ts) => ts.dayOfWeek === dayNames[dayOfWeek] && ts.hour === hour,
-        );
+//         // Find the matching time slot
+//         const timeSlot = timeScores.find(
+//           (ts) => ts.dayOfWeek === dayNames[dayOfWeek] && ts.hour === hour,
+//         );
 
-        if (timeSlot) {
-          // Weight the score based on open rate and click rate
-          const performanceScore =
-            variant.performance.openRate * 0.7 +
-            variant.performance.clickRate * 0.3;
-          timeSlot.score += performanceScore;
-        }
-      }
-    }
+//         if (timeSlot) {
+//           // Weight the score based on open rate and click rate
+//           const performanceScore =
+//             variant.performance.openRate * 0.7 +
+//             variant.performance.clickRate * 0.3;
+//           timeSlot.score += performanceScore;
+//         }
+//       }
+//     }
 
-    // Normalize scores (average across all campaigns that used each time slot)
-    const campaignCount = campaigns.length * 2; // Each campaign has 2 variants
-    timeScores.forEach((slot) => {
-      slot.score = slot.score / campaignCount;
-    });
+//     // Normalize scores (average across all campaigns that used each time slot)
+//     const campaignCount = campaigns.length * 2; // Each campaign has 2 variants
+//     timeScores.forEach((slot) => {
+//       slot.score = slot.score / campaignCount;
+//     });
 
-    // Sort by score and keep top performing slots
-    timeScores.sort((a, b) => b.score - a.score);
+//     // Sort by score and keep top performing slots
+//     timeScores.sort((a, b) => b.score - a.score);
 
-    // Store recommendations
-    await ctx.runMutation(internal.recommendations.storeRecommendations, {
-      userId: args.userId,
-      category: args.category,
-      timeScores: timeScores.slice(0, 50), // Keep top 50 time slots
-    });
+//     // Store recommendations
+//     await ctx.runMutation(internal.recommendations.storeRecommendations, {
+//       userId: args.userId,
+//       category: args.category,
+//       timeScores: timeScores.slice(0, 50), // Keep top 50 time slots
+//     });
 
-    return null;
-  },
-});
+//     return null;
+//   },
+// });
 
 // Internal query to get user campaigns for analysis
-export const getUserCampaigns = internalQuery({
-  args: {
-    userId: v.string(),
-    category: v.string(),
-  },
-  returns: v.array(
-    v.object({
-      _id: v.id("campaigns"),
-      sendTimeA: v.optional(v.number()),
-      sendTimeB: v.optional(v.number()),
-      status: v.union(
-        v.literal("draft"),
-        v.literal("scheduled"),
-        v.literal("sent"),
-      ),
-    }),
-  ),
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("campaigns")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
-      .filter((q) =>
-        q.and(
-          q.eq(q.field("category"), args.category),
-          q.eq(q.field("status"), "sent"),
-        ),
-      )
-      .collect()
-      .then((campaigns) =>
-        campaigns.map((c) => ({
-          _id: c._id,
-          sendTimeA: c.sendTimeA,
-          sendTimeB: c.sendTimeB,
-          status: c.status,
-        })),
-      );
-  },
-});
+// export const getUserCampaigns = internalQuery({
+//   args: {
+//     userId: v.string(),
+//     category: v.string(),
+//   },
+//   returns: v.array(
+//     v.object({
+//       _id: v.id("campaigns"),
+//       sendTimeA: v.optional(v.number()),
+//       sendTimeB: v.optional(v.number()),
+//       status: v.union(
+//         v.literal("draft"),
+//         v.literal("scheduled"),
+//         v.literal("sent"),
+//       ),
+//     }),
+//   ),
+//   handler: async (ctx, args) => {
+//     return await ctx.db
+//       .query("campaigns")
+//       .withIndex("by_user", (q) => q.eq("userId", args.userId))
+//       .filter((q) =>
+//         q.and(
+//           q.eq(q.field("category"), args.category),
+//           q.eq(q.field("status"), "sent"),
+//         ),
+//       )
+//       .collect()
+//       .then((campaigns) =>
+//         campaigns.map((c) => ({
+//           _id: c._id,
+//           sendTimeA: c.sendTimeA,
+//           sendTimeB: c.sendTimeB,
+//           status: c.status,
+//         })),
+//       );
+//   },
+// });
 
 // Internal query to get campaign performance
 export const getCampaignPerformance = internalQuery({
@@ -302,27 +302,27 @@ export const generateAllRecommendations = internalAction({
     });
 
     // Generate recommendations for each user-category combination
-    for (const [userId, categories] of userCategories) {
-      for (const category of categories) {
-        try {
-          await ctx.runAction(
-            internal.recommendations.generateRecommendations,
-            {
-              userId,
-              category,
-            },
-          );
-          console.log(
-            `Generated recommendations for user ${userId}, category ${category}`,
-          );
-        } catch (error) {
-          console.error(
-            `Failed to generate recommendations for user ${userId}, category ${category}:`,
-            error,
-          );
-        }
-      }
-    }
+    // for (const [userId, categories] of userCategories) {
+    //   for (const category of categories) {
+    //     try {
+    //       await ctx.runAction(
+    //         internal.recommendations.generateRecommendations,
+    //         {
+    //           userId,
+    //           category,
+    //         },
+    //       );
+    //       console.log(
+    //         `Generated recommendations for user ${userId}, category ${category}`,
+    //       );
+    //     } catch (error) {
+    //       console.error(
+    //         `Failed to generate recommendations for user ${userId}, category ${category}:`,
+    //         error,
+    //       );
+    //     }
+    //   }
+    // }
 
     return null;
   },
