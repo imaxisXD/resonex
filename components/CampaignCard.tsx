@@ -48,11 +48,11 @@ export default function CampaignCard({ campaign }: CampaignCardProps) {
         {/* <span className="text-gray-500">
           {campaign.recipients.toLocaleString()} recipients
         </span> */}
-        {campaign.sendTimeA && campaign.status === "scheduled" && (
+        {/* {campaign.sendTimeA && campaign.status === "scheduled" && (
           <span className="font-medium" style={{ color: "#8D2676" }}>
             {campaign.sendTimeA}
           </span>
-        )}
+        )} */}
       </div>
     </div>
   );
