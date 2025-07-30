@@ -43,7 +43,7 @@ export const ScheduleNode = ({ data }: ScheduleNodeProps) => {
       </div>
 
       <div className="space-y-2 text-xs">
-        {data.data.sendTimeA || data.data.sendTimeB ? (
+        {/* {data.data.sendTimeA || data.data.sendTimeB ? (
           <div className="space-y-1">
             {data.data.sendTimeA && (
               <div>
@@ -60,7 +60,7 @@ export const ScheduleNode = ({ data }: ScheduleNodeProps) => {
           </div>
         ) : (
           <div className="text-gray-500">Not scheduled yet</div>
-        )}
+        )} */}
       </div>
 
       <Handle
