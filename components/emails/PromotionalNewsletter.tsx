@@ -10,6 +10,7 @@ import {
   Img,
   Preview,
 } from "@react-email/components";
+import { parseJSXString } from "../utils/email-parser";
 
 interface PromotionalNewsletterProps {
   companyName?: string;
@@ -62,7 +63,7 @@ export default function PromotionalNewsletter({
 
             <Text style={subjectStyle}>{subject}</Text>
 
-            <Text style={contentStyle}>{content}</Text>
+            <Section style={contentStyle}>{parseJSXString(content)}</Section>
 
             <Section style={campaignSpotlightStyle}>
               <Text style={spotlightTitleStyle}>⚡ Campaign Spotlight</Text>

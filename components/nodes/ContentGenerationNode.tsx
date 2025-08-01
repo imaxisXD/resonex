@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { RainbowButton } from "@/components/magicui/rainbow-button";
 import { useSynchronizedTemplateState } from "@/hooks/useTemplateState";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import AIGeneratedNode from "./AIGeneratedNode";
 
@@ -40,10 +40,11 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
 }: ContentGenerationNodeProps) {
   const { selectedTemplate, setSelectedTemplate } =
     useSynchronizedTemplateState(id);
-  const emailFromDb = useQuery(api.emails.getEmailFromNodeId, {
-    nodeId: id,
-    campaignId: data.data._id,
-  });
+  const emailFromDb = useQuery(
+    api.emails.getEmailFromNodeId,
+    id && data?.data?._id ? { nodeId: id, campaignId: data.data._id } : "skip",
+  );
+  const generateEmail = useMutation(api.workpools.emailMutation);
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -60,12 +61,16 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
     [id, setSelectedTemplate],
   );
 
-  // const startGenerating = useCallback(() => {
-  //   mutation(api.emails.startGenerating, {
-  //     nodeId: id,
-  //     campaignId: data.data._id,
-  //   });
-  // }, [id, data.data._id]);
+  const startGenerating = useCallback(() => {
+    if (!selectedTemplate) {
+      return;
+    }
+    generateEmail({
+      templateId: selectedTemplate?.template.id,
+      campaignId: data.data._id,
+      nodeId: id,
+    });
+  }, [id, data.data._id, generateEmail, selectedTemplate]);
 
   const openDrawer = useCallback(() => {
     setIsDrawerOpen(true);
@@ -234,7 +239,7 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
         {selectedTemplate ? (
           <RainbowButton
             className="w-full"
-            // onClick={toggleGenerating}
+            onClick={startGenerating}
             disabled={emailFromDb?.status === "generating"}
           >
             {emailFromDb?.status === "generating" ? (

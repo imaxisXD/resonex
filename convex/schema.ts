@@ -39,8 +39,8 @@ export default defineSchema({
     subjectLine: v.string(),
     sendTime: v.optional(v.number()),
     ctaText: v.optional(v.string()),
-    nodeId: v.optional(v.string()),
-    templateId: v.optional(v.string()),
+    nodeId: v.string(),
+    templateId: v.string(),
     resendEmailIds: v.optional(v.array(v.string())),
     status: v.union(
       v.literal("draft"),

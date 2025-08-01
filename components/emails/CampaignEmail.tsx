@@ -10,6 +10,7 @@ import {
   Img,
   Preview,
 } from "@react-email/components";
+import { parseJSXString } from "../utils/email-parser";
 
 interface CampaignEmailProps {
   companyName?: string;
@@ -56,7 +57,7 @@ export default function CampaignEmail({
 
             <Text style={subjectStyle}>{subject}</Text>
 
-            <Text style={contentStyle}>{content}</Text>
+            {parseJSXString(content)}
 
             <Section style={ctaSection}>
               <Button href={ctaLink} style={buttonStyle}>
@@ -127,13 +128,6 @@ const subjectStyle = {
   lineHeight: "32px",
   margin: "32px 0 24px 0",
   color: "#1f2937",
-};
-
-const contentStyle = {
-  fontSize: "16px",
-  lineHeight: "26px",
-  margin: "16px 0",
-  color: "#374151",
 };
 
 const ctaSection = {

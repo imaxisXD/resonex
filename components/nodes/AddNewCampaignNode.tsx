@@ -1,18 +1,18 @@
 "use client";
 import React, { memo, useState } from "react";
 import { Handle, Position, NodeProps } from "@xyflow/react";
-import { Label } from "./ui/label";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
+} from "@/components/ui/select";
 import { MailPlus } from "lucide-react";
-import { Textarea } from "./ui/textarea";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { useMutation } from "convex/react";
@@ -242,7 +242,7 @@ const AddNewCampaignNode: React.FC<NodeProps> = ({ data, selected }) => {
           disabled={!isReady}
           onClick={handleAddCampaign}
         >
-          Add content
+          Create Campaign
         </Button>
       </div>
 

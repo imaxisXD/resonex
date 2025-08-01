@@ -8,10 +8,8 @@ import { Button } from "../ui/button";
 import { generateEmailHTMLFromData } from "../utils/email-templates";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,

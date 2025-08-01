@@ -125,3 +125,19 @@ export const getEmailFromNodeId = query({
       .first();
   },
 });
+
+export const updateEmailContent = internalMutation({
+  args: {
+    emailId: v.id("emails"),
+    body: v.string(),
+    subjectLine: v.string(),
+    ctaText: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.emailId, {
+      body: args.body,
+      subjectLine: args.subjectLine,
+      ctaText: args.ctaText,
+    });
+  },
+});

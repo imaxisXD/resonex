@@ -16,7 +16,7 @@ export default function Sidebar() {
 
   const getNavItemClasses = (isActive: boolean) => {
     const baseClasses =
-      "flex items-center gap-3 p-3 py-2.5 rounded-lg cursor-pointer transition-all duration-75 ease-in-out";
+      "flex items-center gap-3 p-2.5 py-2.5 rounded-lg cursor-pointer transition-all duration-75 ease-in-out";
     const activeClasses = "bg-highlight text-highlight-txt font-medium";
     const inactiveClasses =
       "text-gray-600 hover:bg-highlight hover:text-highlight-txt";
@@ -77,7 +77,7 @@ export default function Sidebar() {
           />
         </div>
         {isCampaignsOpen && (
-          <div className="mt-1 ml-4 flex flex-col gap-1 space-y-1">
+          <div className="mt-1 ml-4 flex flex-col space-y-1">
             <Link
               href="/dashboard/campaigns"
               className={getNavItemClasses(pathname === "/dashboard/campaigns")}

@@ -10,6 +10,7 @@ import {
   Img,
   Preview,
 } from "@react-email/components";
+import { parseJSXString } from "../utils/email-parser";
 
 interface ModernNewsletterProps {
   companyName?: string;
@@ -30,6 +31,8 @@ export default function ModernNewsletter({
   ctaLink = "https://www.resonex.cc",
   logoUrl,
 }: ModernNewsletterProps) {
+  console.log("content", content);
+
   return (
     <Html lang="en">
       <Head />
@@ -54,10 +57,9 @@ export default function ModernNewsletter({
 
           <Section style={mainContentStyle}>
             <Text style={greetingStyle}>Hello {recipientName}! 👋</Text>
-
             <Text style={subjectStyle}>{subject}</Text>
 
-            <Text style={contentStyle}>{content}</Text>
+            <Section style={contentStyle}>{parseJSXString(content)}</Section>
 
             <Section style={featuredCampaignStyle}>
               <Text style={featuredContentStyle}>

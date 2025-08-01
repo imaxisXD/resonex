@@ -153,6 +153,8 @@ export const generateEmailHTMLFromData = async (
     ctaText: emailData.ctaText,
   };
 
+  console.log("commonProps", emailData.templateId);
+
   switch (emailData.templateId) {
     case "modern":
       return await pretty(
@@ -173,6 +175,10 @@ export const generateEmailHTMLFromData = async (
         }),
       );
     default:
-      return "<div>Error: Invalid template ID</div>";
+      return await pretty(
+        await render(<CampaignEmail {...commonProps} />, {
+          plainText: false,
+        }),
+      );
   }
 };
