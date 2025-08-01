@@ -1,8 +1,12 @@
-import { v } from "convex/values";
-import { action, internalMutation, internalQuery } from "./_generated/server";
-import { vOnCompleteArgs, vOnCompleteValidator } from "@convex-dev/workpool";
+import { ConvexError, v } from "convex/values";
+import {
+  action,
+  internalMutation,
+  internalQuery,
+  query,
+} from "./_generated/server";
+import { vOnCompleteArgs } from "@convex-dev/workpool";
 
-// Internal query to get campaign for sending
 export const getCampaignForSending = internalQuery({
   args: {
     campaignId: v.id("campaigns"),
@@ -99,5 +103,25 @@ export const emailOnComplete = internalMutation({
     await ctx.db.patch(context.emailId, {
       status: "draft",
     });
+  },
+});
+
+export const getEmailFromNodeId = query({
+  args: {
+    nodeId: v.string(),
+    campaignId: v.id("campaigns"),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.auth.getUserIdentity();
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    return await ctx.db
+      .query("emails")
+      .withIndex("by_campaign_node", (q) =>
+        q.eq("campaignId", args.campaignId).eq("nodeId", args.nodeId),
+      )
+      .first();
   },
 });

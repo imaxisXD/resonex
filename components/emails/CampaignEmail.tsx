@@ -12,8 +12,6 @@ import {
 } from "@react-email/components";
 
 interface CampaignEmailProps {
-  campaignName: string;
-  category: string;
   companyName?: string;
   recipientName?: string;
   subject?: string;
@@ -24,28 +22,26 @@ interface CampaignEmailProps {
 }
 
 export default function CampaignEmail({
-  campaignName,
-  category,
-  companyName = "Your Company",
+  companyName = "Resonex",
   recipientName = "Valued Customer",
   subject = "Important Update",
   content = "We have exciting news to share with you about our latest campaign.",
   ctaText = "Learn More",
-  ctaLink = "https://example.com",
+  ctaLink = "https://www.resonex.cc",
   logoUrl,
 }: CampaignEmailProps) {
   return (
     <Html lang="en">
       <Head />
       <Preview>
-        {campaignName} - {subject}
+        {companyName} - {subject}
       </Preview>
       <Body style={bodyStyle}>
         <Container style={containerStyle}>
           <Section style={headerStyle}>
             {logoUrl && (
               <Img
-                src={logoUrl}
+                src={"/resonex-logo.webp"}
                 alt={companyName}
                 width="120"
                 height="40"
@@ -72,15 +68,6 @@ export default function CampaignEmail({
           <Hr style={hrStyle} />
 
           <Section style={footerStyle}>
-            <Text style={campaignInfoStyle}>
-              <strong>Campaign:</strong> {campaignName}
-            </Text>
-            <Text style={campaignInfoStyle}>
-              <strong>Category:</strong> {category}
-            </Text>
-            <Text style={footerTextStyle}>
-              This email was sent as part of the {campaignName} campaign.
-            </Text>
             <Text style={footerTextStyle}>
               © 2024 {companyName}. All rights reserved.
             </Text>
@@ -174,13 +161,6 @@ const hrStyle = {
 
 const footerStyle = {
   padding: "0 32px",
-};
-
-const campaignInfoStyle = {
-  fontSize: "14px",
-  lineHeight: "20px",
-  margin: "8px 0",
-  color: "#6b7280",
 };
 
 const footerTextStyle = {

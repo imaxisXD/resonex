@@ -20,12 +20,12 @@ import "@xyflow/react/dist/style.css";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useParams } from "next/navigation";
-import ABTestNode from "@/components/ABTestNode";
-import ContentGenerationNode from "@/components/ContentGenerationNode";
+import ABTestNode from "@/components/nodes/ABTestNode";
+import ContentGenerationNode from "@/components/nodes/ContentGenerationNode";
 import { NodesCMDK } from "@/components/NodesCMDK";
 import { CampaignNode } from "@/components/CampaignNode";
 import { ScheduleNode } from "@/components/ScheduleNode";
-import { AnalyticsNode } from "@/components/AnalyticsNode";
+import { AnalyticsNode } from "@/components/nodes/AnalyticsNode";
 import { CampaignNodeData } from "@/lib/connection-rules";
 import { useConnectionRules } from "@/hooks/useConnectionRules";
 

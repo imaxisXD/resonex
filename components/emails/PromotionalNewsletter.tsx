@@ -12,8 +12,6 @@ import {
 } from "@react-email/components";
 
 interface PromotionalNewsletterProps {
-  campaignName: string;
-  category: string;
   companyName?: string;
   recipientName?: string;
   subject?: string;
@@ -24,20 +22,18 @@ interface PromotionalNewsletterProps {
 }
 
 export default function PromotionalNewsletter({
-  campaignName,
-  category,
-  companyName = "Your Company",
+  companyName = "Resonex",
   recipientName = "Valued Customer",
   subject = "Exclusive Offer Inside!",
   content = "Limited time offer - Get exclusive access to our premium features at unbeatable prices.",
   ctaText = "Claim Offer",
-  ctaLink = "https://example.com",
+  ctaLink = "https://www.resonex.cc",
   logoUrl,
 }: PromotionalNewsletterProps) {
   return (
     <Html lang="en">
       <Head />
-      <Preview>{campaignName} - Exclusive Promotional Offer</Preview>
+      <Preview>{companyName} - Exclusive Promotional Offer</Preview>
       <Body style={bodyStyle}>
         <Container style={containerStyle}>
           <Section style={headerStyle}>
@@ -47,7 +43,7 @@ export default function PromotionalNewsletter({
 
             {logoUrl && (
               <Img
-                src={logoUrl}
+                src={"/resonex-logo.webp"}
                 alt={companyName}
                 width="100"
                 height="32"
@@ -69,13 +65,10 @@ export default function PromotionalNewsletter({
             <Text style={contentStyle}>{content}</Text>
 
             <Section style={campaignSpotlightStyle}>
-              <Text style={spotlightTitleStyle}>
-                ⚡ Campaign Spotlight: {campaignName}
-              </Text>
-              <Text style={categoryStyle}>Category: {category}</Text>
+              <Text style={spotlightTitleStyle}>⚡ Campaign Spotlight</Text>
               <Text style={spotlightContentStyle}>
                 Join thousands of satisfied customers who have already taken
-                advantage of this exclusive {category} offer.
+                advantage of this exclusive offer.
               </Text>
             </Section>
 
@@ -117,10 +110,7 @@ export default function PromotionalNewsletter({
             <Text style={footerMessageStyle}>
               Don&apos;t miss out on this incredible opportunity!
             </Text>
-            <Text style={disclaimerStyle}>
-              This promotional email was sent as part of the {campaignName}{" "}
-              campaign.
-            </Text>
+
             <Text style={copyrightStyle}>
               © 2024 {companyName}. All rights reserved.
             </Text>
@@ -243,13 +233,6 @@ const spotlightTitleStyle = {
   lineHeight: "24px",
 };
 
-const categoryStyle = {
-  fontSize: "14px",
-  color: "#6b7280",
-  margin: "0 0 12px 0",
-  lineHeight: "20px",
-};
-
 const spotlightContentStyle = {
   fontSize: "16px",
   color: "#374151",
@@ -354,14 +337,6 @@ const footerMessageStyle = {
   textAlign: "center" as const,
   margin: "0 0 16px 0",
   lineHeight: "20px",
-};
-
-const disclaimerStyle = {
-  fontSize: "12px",
-  color: "#9ca3af",
-  textAlign: "center" as const,
-  margin: "0 0 8px 0",
-  lineHeight: "16px",
 };
 
 const copyrightStyle = {

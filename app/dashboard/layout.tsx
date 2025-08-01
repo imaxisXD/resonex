@@ -1,7 +1,10 @@
 "use client";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
-import { Authenticated } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Authenticated, useMutation } from "convex/react";
+import { useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
 
 export default function RootLayout({
   children,
@@ -10,6 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <Authenticated>
+      <StoreUserInDatabase />
       <div className="flex h-screen bg-gray-100">
         <Sidebar />
         <div className="relative flex flex-1 flex-col">
@@ -23,4 +27,13 @@ export default function RootLayout({
       </div>
     </Authenticated>
   );
+}
+
+function StoreUserInDatabase() {
+  const { user } = useUser();
+  const storeUser = useMutation(api.user.store);
+  useEffect(() => {
+    void storeUser();
+  }, [storeUser, user?.id]);
+  return null;
 }

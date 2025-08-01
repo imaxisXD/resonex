@@ -25,12 +25,22 @@ export default defineSchema({
     .index("by_status", ["status"])
     .index("by_user_and_status", ["userId", "status"])
     .index("by_email_ids", ["emailIds"]),
-
+  users: defineTable({
+    name: v.string(),
+    tokenIdentifier: v.string(),
+    email: v.string(),
+    pictureUrl: v.optional(v.string()),
+  })
+    .index("by_token", ["tokenIdentifier"])
+    .index("by_email", ["email"]),
   emails: defineTable({
     campaignId: v.id("campaigns"),
     body: v.string(),
     subjectLine: v.string(),
     sendTime: v.optional(v.number()),
+    ctaText: v.optional(v.string()),
+    nodeId: v.optional(v.string()),
+    templateId: v.optional(v.string()),
     resendEmailIds: v.optional(v.array(v.string())),
     status: v.union(
       v.literal("draft"),
@@ -39,7 +49,10 @@ export default defineSchema({
       v.literal("generating"),
     ),
   })
+    .index("by_node_id", ["nodeId"])
+    .index("by_template_id", ["templateId"])
     .index("by_campaign", ["campaignId"])
+    .index("by_campaign_node", ["campaignId", "nodeId"])
     .index("by_status", ["status"]),
 
   events: defineTable({

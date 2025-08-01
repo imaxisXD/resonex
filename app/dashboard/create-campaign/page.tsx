@@ -19,7 +19,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import AddNewCampaignNode, {
   BaseNodeData,
-} from "@/components/AddNewCampaignNode";
+} from "@/components/nodes/AddNewCampaignNode";
 
 const nodeTypes = {
   baseNode: AddNewCampaignNode,

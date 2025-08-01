@@ -15,6 +15,7 @@ import type * as http from "../http.js";
 import type * as llmCall from "../llmCall.js";
 import type * as reactFlowCanvas from "../reactFlowCanvas.js";
 import type * as recommendations from "../recommendations.js";
+import type * as user from "../user.js";
 import type * as workpools from "../workpools.js";
 
 import type {
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   llmCall: typeof llmCall;
   reactFlowCanvas: typeof reactFlowCanvas;
   recommendations: typeof recommendations;
+  user: typeof user;
   workpools: typeof workpools;
 }>;
 declare const fullApiWithMounts: typeof fullApi;

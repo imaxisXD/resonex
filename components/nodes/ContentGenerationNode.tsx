@@ -4,15 +4,19 @@ import {
   FileText,
   LoaderIcon,
   Pencil,
+  RefreshCcw,
 } from "lucide-react";
 import { Doc } from "@/convex/_generated/dataModel";
 import { useState, memo, useCallback, useMemo } from "react";
-import ContentGenerationDrawer from "./ContentGenerationDrawer";
-import { EmailTemplate } from "./types/email-template";
+import ContentGenerationDrawer from "@/components/ContentGenerationDrawer";
+import { EmailTemplate } from "@/components/types/email-template";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "./ui/button";
-import { RainbowButton } from "./magicui/rainbow-button";
+import { buttonVariants } from "@/components/ui/button";
+import { RainbowButton } from "@/components/magicui/rainbow-button";
 import { useSynchronizedTemplateState } from "@/hooks/useTemplateState";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import AIGeneratedNode from "./AIGeneratedNode";
 
 interface SelectedTemplateInfo {
   template: EmailTemplate;
@@ -36,17 +40,12 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
 }: ContentGenerationNodeProps) {
   const { selectedTemplate, setSelectedTemplate } =
     useSynchronizedTemplateState(id);
+  const emailFromDb = useQuery(api.emails.getEmailFromNodeId, {
+    nodeId: id,
+    campaignId: data.data._id,
+  });
 
-  const [generating, setGenerating] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  const statusColor = useMemo(() => {
-    if (selectedTemplate) {
-      return "border-green-500 bg-green-50/80";
-    } else {
-      return "bg-white/90";
-    }
-  }, [selectedTemplate]);
 
   const nodeLabel = useMemo(() => data.label, [data.label]);
   const nodeStatus = useMemo(
@@ -61,9 +60,12 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
     [id, setSelectedTemplate],
   );
 
-  const toggleGenerating = useCallback(() => {
-    setGenerating((prev) => !prev);
-  }, []);
+  // const startGenerating = useCallback(() => {
+  //   mutation(api.emails.startGenerating, {
+  //     nodeId: id,
+  //     campaignId: data.data._id,
+  //   });
+  // }, [id, data.data._id]);
 
   const openDrawer = useCallback(() => {
     setIsDrawerOpen(true);
@@ -73,7 +75,7 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
     setIsDrawerOpen(open);
   }, []);
 
-  const TemplatePlaceholder = useCallback(() => {
+  const TemplatePlaceholder = memo(function TemplatePlaceholder() {
     return (
       <div className="flex flex-col items-center space-y-3 text-center">
         <div className="relative flex h-32 w-full items-center justify-center overflow-hidden rounded-md border-2 border-dashed border-gray-300 bg-gradient-to-b from-white via-gray-100">
@@ -91,98 +93,101 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
         </div>
       </div>
     );
-  }, []);
+  });
 
-  const TemplateThumbnail = useCallback(
-    ({ templateInfo }: { templateInfo: SelectedTemplateInfo }) => {
-      return (
-        <div className="flex flex-col items-center space-y-3 text-center">
-          <div className="relative">
-            {generating && (
-              <>
-                <div className="holographic-bg pointer-events-none absolute inset-0 z-10 rounded-lg opacity-40" />
-                <div className="shine-bg pointer-events-none absolute inset-0 z-20 rounded-lg" />
-                <div className="pointer-events-none absolute inset-0 z-20">
-                  <div className="sparkle-1 absolute h-0.5 w-0.5 rounded-full bg-white" />
-                  <div className="sparkle-2 absolute h-0.5 w-0.5 rounded-full bg-white" />
-                  <div className="sparkle-3 absolute h-0.5 w-0.5 rounded-full bg-white" />
-                  <div className="sparkle-4 absolute h-0.5 w-0.5 rounded-full bg-white" />
-                </div>
-                <div className="border-glow-bg pointer-events-none absolute -inset-0.5 z-0 rounded-lg" />
-              </>
-            )}
-
-            <div className="relative z-30 flex h-32 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-200 bg-gray-100">
-              <div
-                className="h-full w-full origin-center scale-50 transform bg-white"
-                style={{
-                  fontSize: "14px",
-                  width: "200%",
-                  height: "200%",
-                  transform: "scale(0.9)",
-                }}
-                dangerouslySetInnerHTML={{
-                  __html: templateInfo.emailHTML,
-                }}
-              />
-
-              <div
-                className={cn(
-                  "absolute right-0 bottom-0 left-0 bg-blue-600/90 px-2 py-1 text-white",
-                  generating && "holographic-solid-bg",
-                )}
-              >
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1">
-                    <span className="font-medium">
-                      {generating
-                        ? "Magic is happening..."
-                        : "Selected Template"}
-                    </span>
-                  </div>
-                  {!generating && (
-                    <span className="text-xs text-blue-100">
-                      (Hover to change)
-                    </span>
-                  )}
-                </div>
+  const TemplateThumbnail = memo(function TemplateThumbnail({
+    templateInfo,
+    generating,
+    openDrawer,
+  }: {
+    templateInfo: SelectedTemplateInfo;
+    generating: boolean;
+    openDrawer: () => void;
+  }) {
+    return (
+      <div className="flex flex-col items-center space-y-3 text-center">
+        <div className="relative">
+          {generating && (
+            <>
+              <div className="holographic-bg pointer-events-none absolute inset-0 z-10 rounded-lg opacity-40" />
+              <div className="shine-bg pointer-events-none absolute inset-0 z-20 rounded-lg" />
+              <div className="pointer-events-none absolute inset-0 z-20">
+                <div className="sparkle-1 absolute h-0.5 w-0.5 rounded-full bg-white" />
+                <div className="sparkle-2 absolute h-0.5 w-0.5 rounded-full bg-white" />
+                <div className="sparkle-3 absolute h-0.5 w-0.5 rounded-full bg-white" />
+                <div className="sparkle-4 absolute h-0.5 w-0.5 rounded-full bg-white" />
               </div>
+              <div className="border-glow-bg pointer-events-none absolute -inset-0.5 z-0 rounded-lg" />
+            </>
+          )}
 
-              <button
-                onClick={generating ? undefined : openDrawer}
-                disabled={generating}
+          <div className="relative z-30 flex h-32 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-200 bg-gray-100">
+            <div
+              className="h-full w-full origin-center scale-50 transform bg-white"
+              style={{
+                fontSize: "14px",
+                width: "200%",
+                height: "200%",
+                transform: "scale(0.9)",
+              }}
+              dangerouslySetInnerHTML={{
+                __html: templateInfo.emailHTML,
+              }}
+            />
+
+            <div
+              className={cn(
+                "absolute right-0 bottom-0 left-0 bg-purple-500/90 px-2 py-1 text-white",
+                generating && "holographic-solid-bg",
+              )}
+            >
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">
+                    {generating ? "Magic is happening..." : "Selected Template"}
+                  </span>
+                </div>
+                {!generating && (
+                  <span className="text-xs text-blue-100">
+                    (Hover to change)
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <button
+              onClick={generating ? undefined : openDrawer}
+              disabled={generating}
+              className={cn(
+                "absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 transition-opacity duration-200",
+                generating
+                  ? "cursor-not-allowed opacity-0"
+                  : "opacity-0 hover:opacity-100",
+              )}
+            >
+              <span
                 className={cn(
-                  "absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 transition-opacity duration-200",
-                  generating
-                    ? "cursor-not-allowed opacity-0"
-                    : "opacity-0 hover:opacity-100",
+                  buttonVariants({ variant: "default" }),
+                  "h-8 text-xs",
+                  generating && "cursor-not-allowed opacity-50",
                 )}
               >
-                <span
-                  className={cn(
-                    buttonVariants({ variant: "default" }),
-                    "h-8 text-xs",
-                    generating && "cursor-not-allowed opacity-50",
-                  )}
-                >
-                  <Pencil className="size-4" />
-                  Change Template
-                </span>
-                <span className="text-xs text-white">
-                  Click to choose a different template
-                </span>
-              </button>
-            </div>
+                <Pencil className="size-4" />
+                Change Template
+              </span>
+              <span className="text-xs text-white">
+                Click to choose a different template
+              </span>
+            </button>
           </div>
         </div>
-      );
-    },
-    [openDrawer, generating],
-  );
+      </div>
+    );
+  });
 
   return (
     <div className="relative">
-      {generating && (
+      {emailFromDb?.status === "generating" && (
         <>
           <div className="gradient-slide-bg absolute -inset-4 -z-10 translate-x-1.5 translate-y-1.5 animate-[gradient-slide_6s_linear_infinite] rounded-xl opacity-50 blur-lg" />
           <div className="holographic-bg pointer-events-none absolute inset-0 z-10 rounded-lg opacity-70" />
@@ -197,12 +202,14 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
         </>
       )}
 
-      <div
-        className={`relative w-[280px] rounded-lg border p-4 shadow-md ${statusColor} z-30 backdrop-blur-sm`}
-      >
+      {emailFromDb?.status === "draft" && (
+        <AIGeneratedNode emailData={emailFromDb} />
+      )}
+
+      <div className="relative z-30 w-[280px] rounded-lg border bg-white/80 p-4 shadow-md backdrop-blur-sm">
         <div className="mb-3 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md border border-blue-500 bg-blue-50">
-            <FileText className="size-5 text-blue-500" strokeWidth={1.5} />
+          <div className="flex h-10 w-10 items-center justify-center rounded-md border border-purple-500 bg-gradient-to-t from-purple-50 to-white">
+            <FileText className="size-5 text-purple-500" strokeWidth={1.5} />
           </div>
           <div className="flex-1">
             <h3 className="text-sm font-medium">{nodeLabel}</h3>
@@ -210,19 +217,14 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
               {selectedTemplate ? "Ready " : nodeStatus}
             </p>
           </div>
-          <button
-            onClick={toggleGenerating}
-            className="rounded bg-gray-100 px-2 py-1 text-xs hover:bg-gray-200"
-            title="Toggle gradient effect"
-          >
-            {generating ? "✨" : "⚫"}
-          </button>
         </div>
 
         <div className="mb-3 space-y-2 text-xs">
           {selectedTemplate ? (
             <TemplateThumbnail
               templateInfo={selectedTemplate as SelectedTemplateInfo}
+              generating={emailFromDb?.status === "generating"}
+              openDrawer={openDrawer}
             />
           ) : (
             <TemplatePlaceholder />
@@ -232,15 +234,21 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
         {selectedTemplate ? (
           <RainbowButton
             className="w-full"
-            onClick={toggleGenerating}
-            disabled={generating}
+            // onClick={toggleGenerating}
+            disabled={emailFromDb?.status === "generating"}
           >
-            {generating ? (
+            {emailFromDb?.status === "generating" ? (
               <LoaderIcon className="size-5 animate-spin" />
+            ) : emailFromDb?.status === "draft" ? (
+              <RefreshCcw className="size-5" />
             ) : (
               <BotMessageSquareIcon className="size-5" />
             )}
-            {generating ? "Resonexing..." : "Generate with AI"}
+            {emailFromDb?.status === "generating"
+              ? "Resonexing..."
+              : emailFromDb?.status === "draft"
+                ? "Regenerate"
+                : "Generate with AI"}
           </RainbowButton>
         ) : null}
 
@@ -256,7 +264,6 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
         <Handle
           type="target"
           position={Position.Top}
-          className="-top-1.5 h-3 w-3 border-2 border-white bg-blue-500"
           style={{
             background: "var(--color-blue-500)",
             height: "10px",
@@ -267,7 +274,6 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
         <Handle
           type="source"
           position={Position.Bottom}
-          className="-bottom-1.5 h-3 w-3 border-2 border-white bg-blue-500"
           style={{
             background: "var(--color-blue-500)",
             height: "10px",

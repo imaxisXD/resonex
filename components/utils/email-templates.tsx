@@ -1,9 +1,11 @@
-import { render } from "@react-email/render";
+import { pretty, render } from "@react-email/render";
 import { Doc } from "@/convex/_generated/dataModel";
 import CampaignEmail from "../emails/CampaignEmail";
 import ModernNewsletter from "../emails/ModernNewsletter";
 import PromotionalNewsletter from "../emails/PromotionalNewsletter";
 import { EmailTemplate } from "../types/email-template";
+import { FunctionReturnType } from "convex/server";
+import { api } from "@/convex/_generated/api";
 
 export const getEmailTemplates = (
   campaign: Doc<"campaigns">,
@@ -137,5 +139,40 @@ export const generateAllEmailHTMLs = async (
         <p>Preview loading failed</p>
       </div>`,
     );
+  }
+};
+
+export const generateEmailHTMLFromData = async (
+  emailData: FunctionReturnType<typeof api.emails.getEmailFromNodeId>,
+) => {
+  if (!emailData) return "";
+
+  const commonProps = {
+    subject: emailData.subjectLine,
+    content: emailData.body,
+    ctaText: emailData.ctaText,
+  };
+
+  switch (emailData.templateId) {
+    case "modern":
+      return await pretty(
+        await render(<ModernNewsletter {...commonProps} />, {
+          plainText: false,
+        }),
+      );
+    case "promotional":
+      return await pretty(
+        await render(<PromotionalNewsletter {...commonProps} />, {
+          plainText: false,
+        }),
+      );
+    case "campaign":
+      return await pretty(
+        await render(<CampaignEmail {...commonProps} />, {
+          plainText: false,
+        }),
+      );
+    default:
+      return "<div>Error: Invalid template ID</div>";
   }
 };

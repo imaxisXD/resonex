@@ -12,8 +12,6 @@ import {
 } from "@react-email/components";
 
 interface ModernNewsletterProps {
-  campaignName: string;
-  category: string;
   companyName?: string;
   recipientName?: string;
   subject?: string;
@@ -24,21 +22,19 @@ interface ModernNewsletterProps {
 }
 
 export default function ModernNewsletter({
-  campaignName,
-  category,
-  companyName = "Your Company",
+  companyName = "Resonex",
   recipientName = "Valued Customer",
   subject = "Your Weekly Update",
   content = "Stay informed with the latest updates and insights from our team.",
   ctaText = "Read More",
-  ctaLink = "https://example.com",
+  ctaLink = "https://www.resonex.cc",
   logoUrl,
 }: ModernNewsletterProps) {
   return (
     <Html lang="en">
       <Head />
       <Preview>
-        {campaignName} Newsletter - {subject}
+        {companyName} Newsletter - {subject}
       </Preview>
       <Body style={bodyStyle}>
         <Container style={containerStyle}>
@@ -64,13 +60,9 @@ export default function ModernNewsletter({
             <Text style={contentStyle}>{content}</Text>
 
             <Section style={featuredCampaignStyle}>
-              <Text style={featuredTitleStyle}>
-                Featured Campaign: {campaignName}
-              </Text>
-              <Text style={categoryStyle}>Category: {category}</Text>
               <Text style={featuredContentStyle}>
-                Don&apos;t miss out on our latest {category} campaign featuring
-                exclusive content and special offers just for you.
+                Don&apos;t miss out on our latest campaign featuring exclusive
+                content and special offers just for you.
               </Text>
             </Section>
 
@@ -107,9 +99,6 @@ export default function ModernNewsletter({
               </tr>
             </table>
 
-            <Text style={disclaimerStyle}>
-              This newsletter was sent as part of the {campaignName} campaign.
-            </Text>
             <Text style={copyrightStyle}>
               © 2024 {companyName}. All rights reserved.
             </Text>
@@ -195,20 +184,20 @@ const featuredCampaignStyle = {
   margin: "0 0 24px 0",
 };
 
-const featuredTitleStyle = {
-  fontSize: "18px",
-  fontWeight: "600",
-  color: "#1f2937",
-  margin: "0 0 8px 0",
-  lineHeight: "24px",
-};
+// const featuredTitleStyle = {
+//   fontSize: "18px",
+//   fontWeight: "600",
+//   color: "#1f2937",
+//   margin: "0 0 8px 0",
+//   lineHeight: "24px",
+// };
 
-const categoryStyle = {
-  fontSize: "14px",
-  color: "#64748b",
-  margin: "0 0 16px 0",
-  lineHeight: "20px",
-};
+// const categoryStyle = {
+//   fontSize: "14px",
+//   color: "#64748b",
+//   margin: "0 0 16px 0",
+//   lineHeight: "20px",
+// };
 
 const featuredContentStyle = {
   fontSize: "16px",
@@ -282,13 +271,13 @@ const statLabelStyle = {
   lineHeight: "20px",
 };
 
-const disclaimerStyle = {
-  fontSize: "14px",
-  color: "#64748b",
-  textAlign: "center" as const,
-  margin: "0 0 16px 0",
-  lineHeight: "20px",
-};
+// const disclaimerStyle = {
+//   fontSize: "14px",
+//   color: "#64748b",
+//   textAlign: "center" as const,
+//   margin: "0 0 16px 0",
+//   lineHeight: "20px",
+// };
 
 const copyrightStyle = {
   fontSize: "12px",
