@@ -41,7 +41,7 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
   const { selectedTemplate, setSelectedTemplate } =
     useSynchronizedTemplateState(id);
   const emailFromDb = useQuery(
-    api.emails.getEmailFromNodeId,
+    api.abEmails.getEmailFromNodeId,
     id && data?.data?._id ? { nodeId: id, campaignId: data.data._id } : "skip",
   );
   const generateEmail = useMutation(api.workpools.emailMutation);

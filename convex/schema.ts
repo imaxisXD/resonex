@@ -19,7 +19,7 @@ export default defineSchema({
         B: v.array(v.string()),
       }),
     ),
-    emailIds: v.optional(v.array(v.id("emails"))),
+    emailIds: v.optional(v.array(v.id("abEmails"))),
   })
     .index("by_user", ["userId"])
     .index("by_status", ["status"])
@@ -33,7 +33,7 @@ export default defineSchema({
   })
     .index("by_token", ["tokenIdentifier"])
     .index("by_email", ["email"]),
-  emails: defineTable({
+  abEmails: defineTable({
     campaignId: v.id("campaigns"),
     body: v.string(),
     subjectLine: v.string(),

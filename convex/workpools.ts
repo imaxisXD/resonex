@@ -26,9 +26,9 @@ export const emailMutation = mutation({
     if (campaign.userId !== user.subject) {
       throw new Error("User does not have access to this campaign");
     }
-    let emailId: Id<"emails">;
+    let emailId: Id<"abEmails">;
     const existingEmail = await ctx.db
-      .query("emails")
+      .query("abEmails")
       .withIndex("by_campaign_node", (q) =>
         q.eq("campaignId", args.campaignId).eq("nodeId", args.nodeId),
       )
@@ -41,7 +41,7 @@ export const emailMutation = mutation({
         status: "generating",
       });
     } else {
-      emailId = await ctx.db.insert("emails", {
+      emailId = await ctx.db.insert("abEmails", {
         campaignId: campaign._id,
         body: "Generating email...",
         subjectLine: "Generating email...",
@@ -67,7 +67,7 @@ export const emailMutation = mutation({
         emailId: emailId,
       },
       {
-        onComplete: internal.emails.emailOnComplete,
+        onComplete: internal.abEmails.emailOnComplete,
         context: { emailId: emailId },
       },
     );

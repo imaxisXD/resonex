@@ -291,7 +291,7 @@ export const deleteEmailNode = mutation({
     }
 
     const getEmail = await ctx.db
-      .query("emails")
+      .query("abEmails")
       .withIndex("by_campaign_node", (q) =>
         q.eq("campaignId", campaignId).eq("nodeId", args.nodeId),
       )

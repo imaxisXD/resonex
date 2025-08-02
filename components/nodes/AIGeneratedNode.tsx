@@ -19,7 +19,7 @@ import EmailPreview from "../EmailPreview";
 const AIGeneratedNode = memo(function AIGeneratedNode({
   emailData,
 }: {
-  emailData: FunctionReturnType<typeof api.emails.getEmailFromNodeId>;
+  emailData: FunctionReturnType<typeof api.abEmails.getEmailFromNodeId>;
 }) {
   const [emailHtml, setEmailHtml] = useState("");
 

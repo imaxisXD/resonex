@@ -13,7 +13,7 @@ export const generateEmailLLM = internalAction({
   args: {
     prompt: v.string(),
     userId: v.string(),
-    emailId: v.id("emails"),
+    emailId: v.id("abEmails"),
   },
   handler: async (ctx, args) => {
     const { partialObjectStream } = streamObject({
@@ -94,7 +94,7 @@ EXAMPLE OUTPUT FORMAT:
       ) {
         continue;
       }
-      await ctx.runMutation(internal.emails.updateEmailContent, {
+      await ctx.runMutation(internal.abEmails.updateEmailContent, {
         emailId: args.emailId,
         body: chunk.emailContent.body,
         subjectLine: chunk.emailContent.subject,

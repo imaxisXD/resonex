@@ -143,7 +143,7 @@ export const generateAllEmailHTMLs = async (
 };
 
 export const generateEmailHTMLFromData = async (
-  emailData: FunctionReturnType<typeof api.emails.getEmailFromNodeId>,
+  emailData: FunctionReturnType<typeof api.abEmails.getEmailFromNodeId>,
 ) => {
   if (!emailData) return "";
 
