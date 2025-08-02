@@ -50,10 +50,31 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  closeButtonPosition = "top-right",
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean;
+  closeButtonPosition?:
+    | "top-left"
+    | "top-right"
+    | "bottom-left"
+    | "bottom-right";
 }) {
+  const getCloseButtonPosition = () => {
+    switch (closeButtonPosition) {
+      case "top-left":
+        return "absolute top-4 left-4";
+      case "top-right":
+        return "absolute top-1 right-1";
+      case "bottom-left":
+        return "absolute bottom-4 left-4";
+      case "bottom-right":
+        return "absolute bottom-4 right-4";
+      default:
+        return "absolute top-4 right-4";
+    }
+  };
+
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
@@ -69,7 +90,10 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="absolute top-4 right-4 inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-b-2 border-gray-300 bg-white bg-clip-padding px-2 py-2 text-sm font-medium font-semibold whitespace-nowrap text-gray-700 shadow-[0_3px_0_#d1d5db] transition-transform hover:bg-gray-50 focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:outline-none active:translate-y-0.5 active:shadow-none disabled:pointer-events-none disabled:opacity-50 has-[>svg]:px-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+            className={cn(
+              "inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-b-2 border-gray-300 bg-white bg-clip-padding px-2 py-2 text-sm font-medium font-semibold whitespace-nowrap text-gray-700 shadow-[0_3px_0_#d1d5db] transition-transform hover:bg-gray-50 focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:outline-none active:translate-y-0.5 active:shadow-none disabled:pointer-events-none disabled:opacity-50 has-[>svg]:px-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+              getCloseButtonPosition(),
+            )}
           >
             <XIcon />
             <span className="sr-only">Close</span>
