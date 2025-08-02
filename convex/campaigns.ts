@@ -56,7 +56,6 @@ export const getCampaign = query({
     }
     const campaign = await ctx.db.get(campaignId);
     if (!campaign || campaign.userId !== userId.subject) {
-      console.log("Campaign not found or access denied");
       return null;
     }
     return campaign;

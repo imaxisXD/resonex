@@ -153,8 +153,6 @@ export const generateEmailHTMLFromData = async (
     ctaText: emailData.ctaText,
   };
 
-  console.log("commonProps", emailData.templateId);
-
   switch (emailData.templateId) {
     case "modern":
       return await pretty(

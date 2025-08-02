@@ -12,11 +12,11 @@ const buttonVariants = cva(
         default:
           "font-semibold rounded-lg relative transition-transform active:translate-y-0.5 active:shadow-none focus:outline-none focus:ring-2 focus:ring-offset-2 bg-[#A13B8C] text-white border bg-clip-padding border-b-2 border-[#6C1D57] hover:bg-[#8D2676] shadow-[0_3px_0_#6C1D57] focus:ring-[#C94FC6] text-sm",
         destructive:
-          "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20",
+          "font-semibold rounded-lg relative transition-transform active:translate-y-0.5 active:shadow-none focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-600 text-white border bg-clip-padding border-b-2 border-red-700 hover:bg-red-500 shadow-[0_3px_0_#dc2626] focus:ring-red-400 text-sm",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground",
+          "font-semibold rounded-lg relative transition-transform active:translate-y-0.5 active:shadow-none focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white text-gray-900 border border-gray-300 bg-clip-padding border-b-2 border-gray-400 hover:bg-gray-50 shadow-[0_3px_0_#9ca3af] focus:ring-blue-400 text-sm",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+          "font-semibold rounded-lg relative transition-transform active:translate-y-0.5 active:shadow-none focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-100 text-gray-900 border bg-clip-padding border-b-2 border-gray-300 hover:bg-gray-200 shadow-[0_3px_0_#d1d5db] focus:ring-gray-400 text-sm",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },

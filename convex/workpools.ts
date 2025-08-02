@@ -51,6 +51,10 @@ export const emailMutation = mutation({
       });
     }
 
+    await ctx.db.patch(campaign._id, {
+      emailIds: [...(campaign.emailIds || []), emailId],
+    });
+
     await workpool.enqueueAction(
       ctx,
       internal.llmCall.generateEmailLLM,

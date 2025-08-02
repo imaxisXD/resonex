@@ -1,6 +1,6 @@
 "use client";
-import React, { memo, useState } from "react";
-import { Handle, Position, NodeProps } from "@xyflow/react";
+import React, { memo, useState, useCallback, useMemo } from "react";
+import { NodeProps } from "@xyflow/react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -33,84 +33,129 @@ interface ValidationError {
   message: string;
 }
 
-const AddNewCampaignNode: React.FC<NodeProps> = ({ data, selected }) => {
+const validateCampaignName = (name: string): ValidationError[] => {
+  const errors: ValidationError[] = [];
+
+  if (!name.trim()) {
+    errors.push({ type: "required", message: "Campaign name is a must" });
+    return errors;
+  }
+
+  if (name.trim().length < 3) {
+    errors.push({
+      type: "minLength",
+      message: "Must be at least 3 characters",
+    });
+  }
+
+  if (name.length > 50) {
+    errors.push({
+      type: "maxLength",
+      message: "Must be 50 characters or less",
+    });
+  }
+
+  if (name.trim() !== name) {
+    errors.push({
+      type: "whitespace",
+      message: "Cannot start or end with spaces",
+    });
+  }
+
+  if (/^[0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(name)) {
+    errors.push({
+      type: "specialCharacter",
+      message: "Cannot start with special character or number",
+    });
+  }
+
+  return errors;
+};
+
+const AddNewCampaignNode: React.FC<NodeProps> = memo(({ data, selected }) => {
   const nodeData = data as BaseNodeData;
   const [content, setContent] = useState(nodeData.content || "");
   const [campaignName, setCampaignName] = useState(nodeData.campaignName || "");
   const [emailType, setEmailType] = useState<"newsletter" | "marketing">(
     nodeData.emailType || "newsletter",
   );
-  const addNewCampaign = useMutation(api.campaigns.createCampaign);
 
+  const addNewCampaign = useMutation(api.campaigns.createCampaign);
   const router = useRouter();
 
-  const validateCampaignName = (name: string): ValidationError[] => {
-    const errors: ValidationError[] = [];
+  const campaignNameErrors = useMemo(
+    () => validateCampaignName(campaignName),
+    [campaignName],
+  );
 
-    if (!name.trim()) {
-      errors.push({ type: "required", message: "Campaign name is a must" });
-      return errors;
-    }
+  const isCampaignNameValid = useMemo(
+    () => campaignNameErrors.length === 0,
+    [campaignNameErrors],
+  );
 
-    if (name.trim().length < 3) {
-      errors.push({
-        type: "minLength",
-        message: "Must be at least 3 characters",
-      });
-    }
+  const isReady = useMemo(
+    () => content.trim() && isCampaignNameValid,
+    [content, isCampaignNameValid],
+  );
 
-    if (name.length > 50) {
-      errors.push({
-        type: "maxLength",
-        message: "Must be 50 characters or less",
-      });
-    }
+  const statusText = useMemo(() => {
+    if (isReady) return "Ready";
+    if (!isCampaignNameValid) return "Fix campaign name";
+    if (!content.trim()) return "Needs content";
+    return "Incomplete";
+  }, [isReady, isCampaignNameValid, content]);
 
-    if (name.trim() !== name) {
-      errors.push({
-        type: "whitespace",
-        message: "Cannot start or end with spaces",
-      });
-    }
+  const containerClasses = useMemo(
+    () =>
+      `w-[300px] rounded-lg border bg-white/70 shadow-md backdrop-blur-sm ${
+        selected
+          ? "border-blue-100 shadow-2xl shadow-blue-200"
+          : "shadow-gray-300"
+      } hover: transition-all duration-75 ease-in-out`,
+    [selected],
+  );
 
-    if (/^[0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(name)) {
-      errors.push({
-        type: "specialCharacter",
-        message: "Cannot start with special character or number",
-      });
-    }
+  const inputClasses = useMemo(
+    () =>
+      `h-7 w-full rounded-sm py-0 text-xs text-gray-600 hover:border-blue-200 hover:bg-blue-100 ${
+        !isCampaignNameValid && campaignName ? "border-red-300 bg-red-50" : ""
+      }`,
+    [isCampaignNameValid, campaignName],
+  );
 
-    return errors;
-  };
+  const handleContentChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newContent = e.target.value;
+      setContent(newContent);
+      nodeData.onContentChange?.(newContent);
+    },
+    [nodeData],
+  );
 
-  const campaignNameErrors = validateCampaignName(campaignName);
-  const isCampaignNameValid = campaignNameErrors.length === 0;
+  const handleCampaignNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newName = e.target.value;
+      setCampaignName(newName);
+      nodeData.onCampaignNameChange?.(newName);
+    },
+    [nodeData],
+  );
 
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newContent = e.target.value;
-    setContent(newContent);
-    nodeData.onContentChange?.(newContent);
-  };
+  const handleEmailTypeChange = useCallback(
+    (value: string) => {
+      const newType = value as "newsletter" | "marketing";
+      setEmailType(newType);
+      nodeData.onEmailTypeChange?.(newType);
+    },
+    [nodeData],
+  );
 
-  const handleCampaignNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newName = e.target.value;
-    setCampaignName(newName);
-    nodeData.onCampaignNameChange?.(newName);
-  };
-
-  const handleEmailTypeChange = (value: string) => {
-    const newType = value as "newsletter" | "marketing";
-    setEmailType(newType);
-    nodeData.onEmailTypeChange?.(newType);
-  };
-
-  const isReady = content.trim() && isCampaignNameValid;
-
-  const handleAddCampaign = async () => {
+  const handleAddCampaign = useCallback(async () => {
     if (!isReady) {
       toast.error("Please fill in all fields");
       return;
     }
+
     toast.promise(
       async () => {
         const campaignId = await addNewCampaign({
@@ -129,13 +174,10 @@ const AddNewCampaignNode: React.FC<NodeProps> = ({ data, selected }) => {
         error: "Failed to add campaign",
       },
     );
-  };
+  }, [isReady, addNewCampaign, campaignName, content, emailType, router]);
 
   return (
-    <div
-      className={`w-[300px] rounded-lg border bg-white/70 shadow-md backdrop-blur-sm ${selected ? "shadow-lg shadow-blue-200" : "shadow-gray-300"} hover: transition-all duration-200 ease-in-out`}
-    >
-      {/* Header */}
+    <div className={containerClasses}>
       <div className="rounded-t-lg p-2 text-gray-800">
         <div className="flex items-center gap-2 space-x-2">
           <div className="bg-highlight flex size-8 items-center justify-center rounded-full text-gray-600">
@@ -149,9 +191,7 @@ const AddNewCampaignNode: React.FC<NodeProps> = ({ data, selected }) => {
         </div>
       </div>
 
-      {/* Content */}
       <div className="space-y-3 p-3">
-        {/* Campaign Name Input */}
         <div>
           <Label
             htmlFor="campaign-name"
@@ -164,7 +204,7 @@ const AddNewCampaignNode: React.FC<NodeProps> = ({ data, selected }) => {
             value={campaignName}
             onChange={handleCampaignNameChange}
             placeholder="(e.g. 'Q4 Product Launch')"
-            className={`h-7 w-full rounded-sm py-0 text-xs text-gray-600 hover:border-blue-200 hover:bg-blue-100 ${!isCampaignNameValid && campaignName ? "border-red-300 bg-red-50" : ""}`}
+            className={inputClasses}
           />
           {campaignNameErrors.length > 0 && (
             <div className="mt-1 space-y-0.5">
@@ -199,43 +239,34 @@ const AddNewCampaignNode: React.FC<NodeProps> = ({ data, selected }) => {
           </Select>
         </div>
 
-        {/* Content Input */}
         <div>
           <label
             htmlFor="email-topic"
             className="mb-1.5 block text-xs font-medium text-gray-800"
           >
-            Topic
+            Prompt
           </label>
           <Textarea
             id="email-topic"
             value={content}
             onChange={handleContentChange}
-            placeholder="Enter the topic of your email (e.g. 'Product Launch Announcement')"
+            placeholder="Enter the prompt for your email (e.g. 'Create a newsletter about the latest product updates')"
             className="w-full resize-none rounded-sm border border-gray-300 px-2 py-1.5 text-xs text-gray-600"
             rows={3}
           />
         </div>
 
-        {/* Status Indicator */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div
               className={`h-2 w-2 rounded-full ${
                 isReady ? "bg-green-500" : "bg-gray-300"
               }`}
-            ></div>
-            <span className="text-xs text-gray-600">
-              {isReady
-                ? "Ready"
-                : !isCampaignNameValid
-                  ? "Fix campaign name"
-                  : !content.trim()
-                    ? "Needs content"
-                    : "Incomplete"}
-            </span>
+            />
+            <span className="text-xs text-gray-600">{statusText}</span>
           </div>
         </div>
+
         <Button
           size="sm"
           className="w-full rounded-sm"
@@ -245,15 +276,10 @@ const AddNewCampaignNode: React.FC<NodeProps> = ({ data, selected }) => {
           Create Campaign
         </Button>
       </div>
-
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="h-3 w-3 border-2 border-white bg-purple-500"
-        style={{ right: -6 }}
-      />
     </div>
   );
-};
+});
 
-export default memo(AddNewCampaignNode);
+AddNewCampaignNode.displayName = "AddNewCampaignNode";
+
+export default AddNewCampaignNode;

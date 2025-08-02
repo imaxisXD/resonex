@@ -11,6 +11,7 @@ import {
   Preview,
 } from "@react-email/components";
 import { parseJSXString } from "../utils/email-parser";
+import { memo } from "react";
 
 interface PromotionalNewsletterProps {
   companyName?: string;
@@ -22,7 +23,7 @@ interface PromotionalNewsletterProps {
   logoUrl?: string;
 }
 
-export default function PromotionalNewsletter({
+export default memo(function PromotionalNewsletter({
   companyName = "Resonex",
   recipientName = "Valued Customer",
   subject = "Exclusive Offer Inside!",
@@ -120,7 +121,7 @@ export default function PromotionalNewsletter({
       </Body>
     </Html>
   );
-}
+});
 
 const bodyStyle = {
   backgroundColor: "#fef2f2",

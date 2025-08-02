@@ -1,21 +1,18 @@
 "use client";
-
-import MetricDashboard from "@/components/MetricDashboard";
-
+// import MetricDashboard from "@/components/MetricDashboard";
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
-import { useRouter } from "next/navigation";
 import DashboardSkeleton from "./DashboardSkeleton";
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
+import Link from "next/link";
+import CampaignCard from "@/components/CampaignCard";
 
 export default function Dashboard() {
-  const router = useRouter();
-
-  // Fetch real data from Convex
   const campaigns = useQuery(api.campaigns.getCampaigns, {});
-  const userAnalytics = undefined;
+  // const userAnalytics = undefined;
 
-  // Loading states
-  if (campaigns === undefined || userAnalytics === undefined) {
+  if (campaigns === undefined) {
     return <DashboardSkeleton />;
   }
 
@@ -53,12 +50,12 @@ export default function Dashboard() {
   // });
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 p-8 pb-10">
+    <div className="mx-auto max-w-7xl space-y-8 pt-16 pb-5 pl-4">
       <div>
         <h2 className="mb-6 text-lg font-semibold text-gray-900">
           Key Metrics
         </h2>
-        <MetricDashboard analytics={userAnalytics} />
+        {/* <MetricDashboard analytics={userAnalytics} /> */}
       </div>
 
       {/* Main Grid */}
@@ -68,16 +65,15 @@ export default function Dashboard() {
             <h2 className="text-lg font-semibold text-gray-900">
               Recent Campaigns
             </h2>
-            <button
-              className="text-sm font-medium transition-colors hover:underline"
-              style={{ color: "#EE342F" }}
-              onClick={() => router.push("/campaigns")}
+            <Link
+              href="/dashboard/campaigns"
+              className={cn(buttonVariants({ variant: "outline" }), "text-sm")}
             >
               View all campaigns
-            </button>
+            </Link>
           </div>
 
-          {/* {transformedCampaigns.length === 0 ? (
+          {campaigns.length === 0 ? (
             <div className="rounded-lg bg-gray-50 p-8 text-center">
               <h3 className="mb-2 text-lg font-medium text-gray-900">
                 No campaigns yet
@@ -85,17 +81,20 @@ export default function Dashboard() {
               <p className="mb-4 text-gray-600">
                 Create your first AI-powered newsletter campaign
               </p>
-              <Link href="/create-campaign" className={cn(buttonVariants())}>
+              <Link
+                href="/dashboard/create-campaign"
+                className={cn(buttonVariants())}
+              >
                 Create Your First Campaign
               </Link>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {transformedCampaigns.map((campaign) => (
-                <CampaignCard key={campaign.id} campaign={campaign} />
+              {campaigns.map((campaign) => (
+                <CampaignCard key={campaign._id} campaign={campaign} />
               ))}
             </div>
-          )} */}
+          )}
         </div>
 
         <div className="space-y-6">

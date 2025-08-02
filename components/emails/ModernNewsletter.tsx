@@ -11,6 +11,7 @@ import {
   Preview,
 } from "@react-email/components";
 import { parseJSXString } from "../utils/email-parser";
+import { memo } from "react";
 
 interface ModernNewsletterProps {
   companyName?: string;
@@ -22,7 +23,7 @@ interface ModernNewsletterProps {
   logoUrl?: string;
 }
 
-export default function ModernNewsletter({
+const ModernNewsletter = memo(function ModernNewsletter({
   companyName = "Resonex",
   recipientName = "Valued Customer",
   subject = "Your Weekly Update",
@@ -31,8 +32,6 @@ export default function ModernNewsletter({
   ctaLink = "https://www.resonex.cc",
   logoUrl,
 }: ModernNewsletterProps) {
-  console.log("content", content);
-
   return (
     <Html lang="en">
       <Head />
@@ -109,7 +108,7 @@ export default function ModernNewsletter({
       </Body>
     </Html>
   );
-}
+});
 
 const bodyStyle = {
   backgroundColor: "#f9fafb",
@@ -186,21 +185,6 @@ const featuredCampaignStyle = {
   margin: "0 0 24px 0",
 };
 
-// const featuredTitleStyle = {
-//   fontSize: "18px",
-//   fontWeight: "600",
-//   color: "#1f2937",
-//   margin: "0 0 8px 0",
-//   lineHeight: "24px",
-// };
-
-// const categoryStyle = {
-//   fontSize: "14px",
-//   color: "#64748b",
-//   margin: "0 0 16px 0",
-//   lineHeight: "20px",
-// };
-
 const featuredContentStyle = {
   fontSize: "16px",
   color: "#374151",
@@ -273,14 +257,6 @@ const statLabelStyle = {
   lineHeight: "20px",
 };
 
-// const disclaimerStyle = {
-//   fontSize: "14px",
-//   color: "#64748b",
-//   textAlign: "center" as const,
-//   margin: "0 0 16px 0",
-//   lineHeight: "20px",
-// };
-
 const copyrightStyle = {
   fontSize: "12px",
   color: "#9ca3af",
@@ -288,3 +264,5 @@ const copyrightStyle = {
   margin: "0",
   lineHeight: "16px",
 };
+
+export default ModernNewsletter;

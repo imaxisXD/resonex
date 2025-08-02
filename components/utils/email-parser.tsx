@@ -14,7 +14,7 @@ import {
   Preview,
 } from "@react-email/components";
 
-// Type definitions for React Email components
+// Extended type definitions for React Email components + HTML elements
 type ReactEmailComponent =
   | "Section"
   | "Text"
@@ -26,7 +26,13 @@ type ReactEmailComponent =
   | "Container"
   | "Hr"
   | "Img"
-  | "Preview";
+  | "Preview"
+  | "br"
+  | "strong"
+  | "em"
+  | "span"
+  | "div"
+  | "a";
 
 interface ParsedElement {
   type: ReactEmailComponent;
@@ -36,11 +42,23 @@ interface ParsedElement {
 
 export function parseJSXString(jsxString: string): React.ReactNode {
   try {
-    // Clean up the string
+    // Clean up the string and handle common issues
     const cleanedString = jsxString
       .replace(/\\\'/g, "'") // Handle escaped quotes
+      .replace(/\\\"/g, '"') // Handle escaped double quotes
       .replace(/\s+/g, " ") // Normalize whitespace
+      .replace(/\n/g, " ") // Convert newlines to spaces
+      .replace(/&quot;/g, '"') // Handle HTML entities
+      .replace(/&apos;/g, "'")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
       .trim();
+
+    // Validate that we have proper JSX structure
+    if (!isValidJSXStructure(cleanedString)) {
+      throw new Error("Invalid JSX structure detected");
+    }
 
     // Parse the JSX string into elements
     const parsed = parseElement(cleanedString);
@@ -49,8 +67,41 @@ export function parseJSXString(jsxString: string): React.ReactNode {
     return renderParsedElement(parsed);
   } catch (error) {
     console.error("Error parsing JSX string:", error);
-    return <Text>Error parsing content</Text>;
+    console.error("Input string:", jsxString);
+    return (
+      <Text>
+        Error parsing content:{" "}
+        {error instanceof Error ? error.message : "Unknown error"}
+      </Text>
+    );
   }
+}
+
+function isValidJSXStructure(jsxString: string): boolean {
+  // Check for unclosed tags
+  const tagStack: string[] = [];
+  const tagRegex = /<\/?(\w+)[^>]*>/g;
+  let match;
+
+  while ((match = tagRegex.exec(jsxString)) !== null) {
+    const fullMatch = match[0];
+    const tagName = match[1];
+
+    if (fullMatch.endsWith("/>")) {
+      // Self-closing tag, ignore
+      continue;
+    } else if (fullMatch.startsWith("</")) {
+      // Closing tag
+      if (tagStack.length === 0 || tagStack.pop() !== tagName) {
+        return false; // Unmatched closing tag
+      }
+    } else {
+      // Opening tag
+      tagStack.push(tagName);
+    }
+  }
+
+  return tagStack.length === 0; // All tags should be closed
 }
 
 function parseElement(jsxString: string): ParsedElement | string {
@@ -154,8 +205,12 @@ function parseChildren(content: string): (ParsedElement | string)[] {
     // Find the end of this element
     const tagMatch = content.slice(nextTagIndex).match(/<(\w+)([^>]*)>/);
     if (!tagMatch) {
-      currentIndex = nextTagIndex + 1;
-      continue;
+      // Treat as text if we can't parse the tag
+      const remainingText = content.slice(nextTagIndex).trim();
+      if (remainingText) {
+        children.push(remainingText);
+      }
+      break;
     }
 
     const tagName = tagMatch[1];
@@ -203,7 +258,17 @@ function parseChildren(content: string): (ParsedElement | string)[] {
     }
 
     if (closingTagIndex === -1) {
-      currentIndex = nextTagIndex + 1;
+      // Treat as self-closing if no closing tag found
+      console.warn(
+        `No closing tag found for <${tagName}>, treating as self-closing`,
+      );
+      const props = parseAttributes(attributesString);
+      children.push({
+        type: tagName as ReactEmailComponent,
+        props,
+        children: [],
+      });
+      currentIndex = nextTagIndex + tagMatch[0].length;
       continue;
     }
 
@@ -231,108 +296,127 @@ function parseAttributes(attributesString: string): Record<string, any> {
   const props: Record<string, any> = {};
   if (!attributesString.trim()) return props;
 
-  // Handle style prop specially - need to find the complete style object
-  const styleRegex = /style=\{(\{[^}]*\})\}/;
-  const styleMatch = attributesString.match(styleRegex);
+  try {
+    // Handle style prop specially - need to find the complete style object
+    const styleRegex = /style=\{(\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})\}/;
+    const styleMatch = attributesString.match(styleRegex);
 
-  if (styleMatch) {
-    try {
-      let styleString = styleMatch[1];
+    if (styleMatch) {
+      try {
+        let styleString = styleMatch[1];
 
-      // Convert JavaScript object notation to JSON
-      styleString = styleString
-        .replace(/(\w+):/g, '"$1":') // Add quotes around property names
-        .replace(/'/g, '"') // Convert single quotes to double quotes
-        .replace(/\\\"/g, '"') // Handle escaped quotes
-        .replace(/,\s*}/, "}") // Remove trailing commas
-        .replace(/\s+/g, " ") // Normalize whitespace
-        .trim();
+        // Convert JavaScript object notation to JSON
+        styleString = styleString
+          .replace(/(\w+):/g, '"$1":') // Add quotes around property names
+          .replace(/'/g, '"') // Convert single quotes to double quotes
+          .replace(/\\\"/g, '"') // Handle escaped quotes
+          .replace(/,\s*}/, "}") // Remove trailing commas
+          .replace(/\s+/g, " ") // Normalize whitespace
+          .trim();
 
-      console.log("Parsing style string:", styleString);
-      props.style = JSON.parse(styleString);
-    } catch (error) {
-      console.warn("Error parsing style, trying manual parsing:", error);
+        props.style = JSON.parse(styleString);
+      } catch (styleError) {
+        console.warn("Error parsing style, trying manual parsing:", styleError);
+        props.style = parseStyleManually(styleMatch[1]);
+      }
+    }
 
-      // Manual parsing fallback for common patterns
-      const styleObj: Record<string, string> = {};
-      const styleContent = styleMatch[1].replace(/[{}]/g, ""); // Remove braces
+    // Handle other attributes (excluding style)
+    const otherAttrsString = attributesString
+      .replace(/style=\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/, "")
+      .trim();
 
-      // Split by comma and parse each property
-      const properties = styleContent.split(",");
-      properties.forEach((prop) => {
-        const colonIndex = prop.indexOf(":");
-        if (colonIndex > 0) {
-          const key = prop.substring(0, colonIndex).trim().replace(/"/g, "");
-          const value = prop
-            .substring(colonIndex + 1)
-            .trim()
-            .replace(/['"]/g, "");
-          if (key && value) {
-            styleObj[key] = value;
+    // More robust attribute parsing
+    const attrMatches = otherAttrsString.match(
+      /(\w+)=(?:"([^"]*)"|'([^']*)'|\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\})/g,
+    );
+
+    if (attrMatches) {
+      attrMatches.forEach((attr) => {
+        const match = attr.match(
+          /(\w+)=(?:"([^"]*)"|'([^']*)'|\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\})/,
+        );
+        if (match) {
+          const [, name, doubleQuoted, singleQuoted, braced] = match;
+          if (name && name !== "style") {
+            const value = doubleQuoted || singleQuoted || braced;
+            props[name] = parseAttributeValue(name, value, !!braced);
           }
         }
       });
-
-      if (Object.keys(styleObj).length > 0) {
-        props.style = styleObj;
-      } else {
-        // Last resort - extract common properties
-        const fontSizeMatch = attributesString.match(/fontSize:\s*"([^"]+)"/);
-        const lineHeightMatch = attributesString.match(
-          /lineHeight:\s*"([^"]+)"/,
-        );
-
-        if (fontSizeMatch || lineHeightMatch) {
-          props.style = {};
-          if (fontSizeMatch) props.style.fontSize = fontSizeMatch[1];
-          if (lineHeightMatch) props.style.lineHeight = lineHeightMatch[1];
-        }
-      }
     }
-  }
-
-  // Handle other attributes (excluding style)
-  const otherAttrsString = attributesString
-    .replace(/style=\{[^}]*\}/, "")
-    .trim();
-  const attrMatches = otherAttrsString.match(
-    /(\w+)=(?:"([^"]*)"|'([^']*)'|\{([^}]*)\})/g,
-  );
-
-  if (attrMatches) {
-    attrMatches.forEach((attr) => {
-      const match = attr.match(/(\w+)=(?:"([^"]*)"|'([^']*)'|\{([^}]*)\})/);
-      if (match) {
-        const [, name, doubleQuoted, singleQuoted, braced] = match;
-        if (name && name !== "style") {
-          const value = doubleQuoted || singleQuoted || braced;
-
-          // Handle common React Email props
-          if (
-            name === "as" ||
-            name === "href" ||
-            name === "src" ||
-            name === "alt" ||
-            name === "width" ||
-            name === "height"
-          ) {
-            props[name] = value;
-          } else if (braced) {
-            // Try to parse braced values
-            try {
-              props[name] = JSON.parse(value);
-            } catch {
-              props[name] = value;
-            }
-          } else {
-            props[name] = value;
-          }
-        }
-      }
-    });
+  } catch (error) {
+    console.warn("Error parsing attributes:", error);
   }
 
   return props;
+}
+
+function parseStyleManually(styleString: string): Record<string, string> {
+  const styleObj: Record<string, string> = {};
+  try {
+    const styleContent = styleString.replace(/[{}]/g, ""); // Remove braces
+
+    // Split by comma, but handle nested objects
+    const properties: string[] = [];
+    let current = "";
+    let depth = 0;
+
+    for (let i = 0; i < styleContent.length; i++) {
+      const char = styleContent[i];
+      if (char === "{") depth++;
+      else if (char === "}") depth--;
+      else if (char === "," && depth === 0) {
+        if (current.trim()) properties.push(current.trim());
+        current = "";
+        continue;
+      }
+      current += char;
+    }
+    if (current.trim()) properties.push(current.trim());
+
+    properties.forEach((prop) => {
+      const colonIndex = prop.indexOf(":");
+      if (colonIndex > 0) {
+        const key = prop.substring(0, colonIndex).trim().replace(/['"]/g, "");
+        const value = prop
+          .substring(colonIndex + 1)
+          .trim()
+          .replace(/^['"]|['"]$/g, ""); // Remove surrounding quotes
+        if (key && value) {
+          styleObj[key] = value;
+        }
+      }
+    });
+  } catch (error) {
+    console.warn("Manual style parsing failed:", error);
+  }
+
+  return styleObj;
+}
+
+function parseAttributeValue(
+  name: string,
+  value: string,
+  isBraced: boolean,
+): any {
+  if (!isBraced) {
+    return value;
+  }
+
+  // Handle common React Email props
+  if (name === "width" || name === "height") {
+    const numValue = parseInt(value, 10);
+    return isNaN(numValue) ? value : numValue;
+  }
+
+  // Try to parse as JSON for braced values
+  try {
+    return JSON.parse(value);
+  } catch {
+    // If JSON parsing fails, return as string
+    return value;
+  }
 }
 
 function renderParsedElement(
@@ -349,7 +433,7 @@ function renderParsedElement(
     renderParsedElement(child, index),
   );
 
-  // Handle each component type explicitly to avoid TypeScript issues
+  // Handle each component type explicitly
   switch (type) {
     case "Section":
       return (
@@ -404,7 +488,6 @@ function renderParsedElement(
     case "Img":
       return <Img {...props} key={key} />;
     case "Preview":
-      // Preview component expects string | string[] as children
       const previewContent = children
         .filter((child): child is string => typeof child === "string")
         .join(" ");
@@ -413,27 +496,41 @@ function renderParsedElement(
           {previewContent}
         </Preview>
       );
+    // Handle HTML elements that might be used in email content
+    case "br":
+      return <br key={key} />;
+    case "strong":
+      return (
+        <strong {...props} key={key}>
+          {renderedChildren}
+        </strong>
+      );
+    case "em":
+      return (
+        <em {...props} key={key}>
+          {renderedChildren}
+        </em>
+      );
+    case "span":
+      return (
+        <span {...props} key={key}>
+          {renderedChildren}
+        </span>
+      );
+    case "div":
+      return (
+        <div {...props} key={key}>
+          {renderedChildren}
+        </div>
+      );
+    case "a":
+      return (
+        <a {...props} key={key}>
+          {renderedChildren}
+        </a>
+      );
     default:
       console.warn(`Unknown component: ${type}`);
       return <Text key={key}>{renderedChildren}</Text>;
   }
-}
-
-// Usage example
-export function ExampleUsage() {
-  const jsxString = `<Section><Text style={{ fontSize: "16px", lineHeight: "1.5" }}>Hi {name},</Text><Text style={{ fontSize: "16px", lineHeight: "1.5" }}>We're excited to announce the upcoming launch of our new product! We've been working hard to bring you the best possible experience, and we can't wait for you to see what we've created.</Text><Text style={{ fontSize: "16px", lineHeight: "1.5" }}>Stay tuned for more updates soon!</Text></Section>`;
-
-  return (
-    <div>
-      <h3>Original JSX String:</h3>
-      <pre>{jsxString}</pre>
-
-      <h3>Parsed Result:</h3>
-      <div
-        style={{ border: "1px solid #ccc", padding: "16px", marginTop: "16px" }}
-      >
-        {parseJSXString(jsxString)}
-      </div>
-    </div>
-  );
 }

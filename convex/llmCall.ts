@@ -42,7 +42,7 @@ CRITICAL REQUIREMENTS:
 2. For the "body" field, use React Email components with inline styles:
 - Use <Section> for content blocks
 - Use <Text> for paragraphs
-- Use <Button href="url">{ctaText}</Button> for CTAs
+
 
 GUARDRAILS - YOU MUST NOT:
 - Include any promotional content for competitors
@@ -69,7 +69,7 @@ EXAMPLE OUTPUT FORMAT:
 {
   "emailContent": {
     "subject": "Your weekly product updates are here",
-    "body": "<Section><Text style={{ fontSize: '16px', lineHeight: '1.5' }}>We've been working hard to improve your experience...</Text><Button href='https://app.com' style={{ backgroundColor: '#000000', color: '#ffffff', padding: '10px 20px', borderRadius: '5px' }}>View Updates</Button></Section>",
+    "body": "<Section><Text style={{ fontSize: '16px', lineHeight: '1.5' }}>We've been working hard to improve your experience...</Text></Section>",
     "ctaText": "View Updates"
   }
 }`,

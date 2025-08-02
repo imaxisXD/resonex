@@ -11,6 +11,7 @@ import {
   Preview,
 } from "@react-email/components";
 import { parseJSXString } from "../utils/email-parser";
+import { memo } from "react";
 
 interface CampaignEmailProps {
   companyName?: string;
@@ -22,7 +23,7 @@ interface CampaignEmailProps {
   logoUrl?: string;
 }
 
-export default function CampaignEmail({
+export default memo(function CampaignEmail({
   companyName = "Resonex",
   recipientName = "Valued Customer",
   subject = "Important Update",
@@ -77,7 +78,7 @@ export default function CampaignEmail({
       </Body>
     </Html>
   );
-}
+});
 
 const bodyStyle = {
   backgroundColor: "#f6f9fc",

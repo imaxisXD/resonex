@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import DashboardIcon from "./icons/DashboardIcon";
@@ -7,13 +6,13 @@ import MailIcon from "./icons/MailIcon";
 import AnalyticsIcon from "./icons/AnalyticsIcon";
 import CalendarIcon from "./icons/CalendarIcon";
 import SettingsIcon from "./icons/SettingsIcon";
-import ChevronDownIcon from "./icons/ChevronDownIcon";
 import Image from "next/image";
+import { buttonVariants } from "./ui/button";
+import { cn } from "@/lib/utils";
+import { PlusCircle } from "lucide-react";
 
 export default function Sidebar() {
-  const [isCampaignsOpen, setIsCampaignsOpen] = useState(true);
   const pathname = usePathname();
-
   const getNavItemClasses = (isActive: boolean) => {
     const baseClasses =
       "flex items-center gap-3 p-2.5 py-2.5 rounded-lg cursor-pointer transition-all duration-75 ease-in-out";
@@ -25,7 +24,7 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="flex h-screen w-56 flex-col bg-gray-100">
+    <div className="flex h-screen w-60 flex-col bg-gray-100">
       <div className="p-6 py-4 pb-7">
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-center gap-1">
@@ -48,7 +47,14 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3">
+      <nav className="flex-1 space-y-1 pr-6 pl-4">
+        <Link
+          href="/dashboard/create-campaign"
+          className={cn(buttonVariants(), "mb-5 h-9 w-full")}
+        >
+          <PlusCircle className="h-4 w-4" />
+          Create Campaign
+        </Link>
         <Link
           href="/dashboard"
           className={getNavItemClasses(
@@ -60,65 +66,17 @@ export default function Sidebar() {
           <span className="text-sm">Dashboard</span>
         </Link>
 
-        <div
+        <Link
+          href="/dashboard/campaigns"
           className={getNavItemClasses(
             pathname.includes("/campaign") || pathname.includes("/campaigns"),
           )}
-          onClick={() => setIsCampaignsOpen(!isCampaignsOpen)}
         >
           <div className="flex items-center gap-3">
             <MailIcon className="h-5 w-5" />
             <span className="text-sm">Campaigns</span>
           </div>
-          <ChevronDownIcon
-            className={`h-4 w-4 transition-transform ${
-              isCampaignsOpen ? "rotate-180" : ""
-            }`}
-          />
-        </div>
-        {isCampaignsOpen && (
-          <div className="mt-1 ml-4 flex flex-col space-y-1">
-            <Link
-              href="/dashboard/campaigns"
-              className={getNavItemClasses(pathname === "/dashboard/campaigns")}
-            >
-              <span className="text-sm">All Campaigns</span>
-            </Link>
-            <div
-              className={getNavItemClasses(
-                pathname.includes("/campaigns/drafts"),
-              )}
-            >
-              <span className="text-sm">Drafts</span>
-              <span
-                className="rounded-full px-2 py-1 text-xs font-medium"
-                style={{ backgroundColor: "#F3B01C20", color: "#F3B01C" }}
-              >
-                2
-              </span>
-            </div>
-            <div
-              className={getNavItemClasses(
-                pathname.includes("/campaigns/scheduled"),
-              )}
-            >
-              <span className="text-sm">Scheduled</span>
-              <span
-                className="rounded-full px-2 py-1 text-xs font-medium"
-                style={{ backgroundColor: "#8D267620", color: "#8D2676" }}
-              >
-                3
-              </span>
-            </div>
-            <div
-              className={getNavItemClasses(
-                pathname.includes("/campaigns/sent"),
-              )}
-            >
-              <span className="text-sm">Sent</span>
-            </div>
-          </div>
-        )}
+        </Link>
 
         <div className={getNavItemClasses(pathname.includes("/analytics"))}>
           <AnalyticsIcon className="h-5 w-5" />
