@@ -33,6 +33,7 @@ const initialNodes: Node[] = [
       label: "Create a new campaign",
       emailType: "newsletter" as const,
     } as BaseNodeData,
+    deletable: false,
     type: "baseNode",
   },
 ];

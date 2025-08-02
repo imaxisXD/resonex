@@ -268,3 +268,42 @@ export const getCampaign = query({
 //     };
 //   },
 // });
+
+export const deleteEmailNode = mutation({
+  args: {
+    nodeId: v.string(),
+    campaignId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await ctx.auth.getUserIdentity();
+    if (!userId) {
+      throw new Error("User must be authenticated");
+    }
+
+    const campaignId = ctx.db.normalizeId("campaigns", args.campaignId);
+    if (!campaignId) {
+      throw new Error("Campaign not found");
+    }
+
+    const campaign = await ctx.db.get(campaignId);
+    if (!campaign || campaign.userId !== userId.subject) {
+      throw new Error("Campaign not found or access denied");
+    }
+
+    const getEmail = await ctx.db
+      .query("emails")
+      .withIndex("by_campaign_node", (q) =>
+        q.eq("campaignId", campaignId).eq("nodeId", args.nodeId),
+      )
+      .first();
+    if (!getEmail) {
+      console.log("Email not found, skipping deletion");
+      return null;
+    }
+    await ctx.db.patch(campaignId, {
+      emailIds: campaign.emailIds?.filter((id) => id !== getEmail._id) || [],
+    });
+    await ctx.db.delete(getEmail._id);
+    return null;
+  },
+});

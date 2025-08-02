@@ -51,9 +51,12 @@ export const emailMutation = mutation({
       });
     }
 
-    await ctx.db.patch(campaign._id, {
-      emailIds: [...(campaign.emailIds || []), emailId],
-    });
+    const currentEmailIds = campaign.emailIds || [];
+    if (!currentEmailIds.includes(emailId)) {
+      await ctx.db.patch(campaign._id, {
+        emailIds: [...currentEmailIds, emailId],
+      });
+    }
 
     await workpool.enqueueAction(
       ctx,

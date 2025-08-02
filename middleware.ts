@@ -11,15 +11,12 @@ const isPublicRoute = createRouteMatcher(["/"]);
 export default clerkMiddleware(async (auth, req) => {
   const { userId, redirectToSignIn } = await auth();
   if (isSignInPage(req) && userId) {
-    console.log("Redirecting to dashboard");
     return Response.redirect(new URL("/dashboard", req.url));
   }
   if (isPublicRoute(req)) {
-    console.log("Public route");
     return;
   }
   if (isProtectedRoute(req) && !userId) {
-    console.log("Redirecting to sign in");
     return redirectToSignIn();
   }
 });

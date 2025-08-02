@@ -1,4 +1,4 @@
-import { Handle, Position } from "@xyflow/react";
+import { Handle, Position, useNodeConnections } from "@xyflow/react";
 import {
   BotMessageSquareIcon,
   FileText,
@@ -45,13 +45,19 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
     id && data?.data?._id ? { nodeId: id, campaignId: data.data._id } : "skip",
   );
   const generateEmail = useMutation(api.workpools.emailMutation);
+  const nodeEdge = useNodeConnections({ handleType: "target" });
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const nodeLabel = useMemo(() => data.label, [data.label]);
   const nodeStatus = useMemo(
-    () => (selectedTemplate ? "ready" : "pending"),
-    [selectedTemplate],
+    () =>
+      selectedTemplate &&
+      nodeEdge.length > 0 &&
+      nodeEdge[0].source === "abTestNode"
+        ? "ready"
+        : "pending",
+    [selectedTemplate, nodeEdge],
   );
 
   const handleTemplateSelect = useCallback(
@@ -62,7 +68,11 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
   );
 
   const startGenerating = useCallback(() => {
-    if (!selectedTemplate) {
+    if (
+      !selectedTemplate ||
+      nodeEdge.length <= 0 ||
+      nodeEdge[0].source !== "abTestNode"
+    ) {
       return;
     }
     generateEmail({
@@ -99,7 +109,6 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
       </div>
     );
   });
-
   const TemplateThumbnail = memo(function TemplateThumbnail({
     templateInfo,
     generating,
@@ -219,7 +228,7 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
           <div className="flex-1">
             <h3 className="text-sm font-medium">{nodeLabel}</h3>
             <p className="text-muted-foreground text-xs capitalize">
-              {selectedTemplate ? "Ready " : nodeStatus}
+              {nodeStatus}
             </p>
           </div>
         </div>
@@ -240,7 +249,11 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
           <RainbowButton
             className="w-full"
             onClick={startGenerating}
-            disabled={emailFromDb?.status === "generating"}
+            disabled={
+              nodeStatus === "pending" || emailFromDb?.status === "generating"
+                ? true
+                : false
+            }
           >
             {emailFromDb?.status === "generating" ? (
               <LoaderIcon className="size-5 animate-spin" />

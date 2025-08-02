@@ -56,6 +56,7 @@ function CampaignPageContent() {
   const params = useParams();
   const campaignId = params.id as string;
   const campaign = useQuery(api.campaigns.getCampaign, { campaignId });
+  const deleteEmailNode = useMutation(api.campaigns.deleteEmailNode);
 
   const savedCanvas = useQuery(
     api.reactFlowCanvas.loadCanvas,
@@ -110,6 +111,7 @@ function CampaignPageContent() {
           data: campaign,
           status: "created",
         } as CampaignNodeData,
+        deletable: false,
         type: "campaignNode",
       },
       {
@@ -121,6 +123,7 @@ function CampaignPageContent() {
           outputEdges: 2,
         },
         type: "abTestNode",
+        deletable: false,
       },
       {
         id: "content",
@@ -237,7 +240,13 @@ function CampaignPageContent() {
 
   useEffect(() => {
     if (savedCanvas?.nodes && savedCanvas?.edges) {
-      setNodes(savedCanvas.nodes);
+      const nodesWithDeletable = savedCanvas.nodes.map((node) => {
+        if (node.id === "campaign" || node.id === "abTestNode") {
+          return { ...node, deletable: false };
+        }
+        return node;
+      });
+      setNodes(nodesWithDeletable);
       setEdges(savedCanvas.edges);
     } else if (campaign && initialNodes.length > 0) {
       setNodes(initialNodes);
@@ -250,7 +259,7 @@ function CampaignPageContent() {
 
     const timeoutId = setTimeout(() => {
       handleSaveCanvas();
-    }, 2000); // Save 2 seconds after last change
+    }, 500);
 
     return () => clearTimeout(timeoutId);
   }, [nodes, edges, handleSaveCanvas]);
@@ -281,6 +290,7 @@ function CampaignPageContent() {
             status: "pending",
           } as CampaignNodeData,
           type: "campaignNode",
+          deletable: false,
         };
       } else if (nodeType.id === "schedule") {
         newNode = {
@@ -327,16 +337,15 @@ function CampaignPageContent() {
             outputEdges: 2,
           },
           type: "abTestNode",
+          deletable: false,
         };
       }
 
       if (newNode) {
         setNodes((nds) => [...nds, newNode]);
-        // Save after adding new node
-        setTimeout(() => handleSaveCanvas(), 100);
       }
     },
-    [campaign, setNodes, handleSaveCanvas],
+    [campaign, setNodes],
   );
 
   const onClearAll = useCallback(async () => {
@@ -359,6 +368,31 @@ function CampaignPageContent() {
     setEdges,
     handleSaveCanvas,
   ]);
+
+  const onNodesDelete = useCallback(
+    (deleted: Node[]) => {
+      if (deleted.length > 0) {
+        setNodes((prevNodes) =>
+          prevNodes.filter((node) => !deleted.some((d) => d.id === node.id)),
+        );
+        setEdges((prevEdges) =>
+          prevEdges.filter(
+            (edge) =>
+              !deleted.some(
+                (d) => d.id === edge.source || d.id === edge.target,
+              ),
+          ),
+        );
+        handleSaveCanvas();
+        deleted.forEach((node) => {
+          if (node.type === "contentGenerationNode") {
+            deleteEmailNode({ nodeId: node.id, campaignId });
+          }
+        });
+      }
+    },
+    [setNodes, setEdges, deleteEmailNode, campaignId],
+  );
 
   const styledEdges = useMemo(
     () =>
@@ -419,6 +453,7 @@ function CampaignPageContent() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodesDelete={onNodesDelete}
         isValidConnection={isValidConnection}
         fitView
         fitViewOptions={{
