@@ -1,6 +1,5 @@
 import React, { forwardRef, type HTMLAttributes } from "react";
 import { type HandleProps } from "@xyflow/react";
-
 import { cn } from "@/lib/utils";
 import { BaseHandle } from "@/components/base-handle";
 
@@ -17,29 +16,44 @@ export const LabeledHandle = forwardRef<
     HTMLAttributes<HTMLDivElement> & {
       title: string;
       handleClassName?: string;
+      color: string;
+      borderColor: string;
     }
->(({ className, handleClassName, title, position, ...props }, ref) => (
-  <div
-    ref={ref}
-    title={title}
-    className={cn(
-      "relative flex items-center",
-      flexDirections[position],
+>(
+  (
+    {
       className,
-    )}
-  >
-    <BaseHandle
-      position={position}
-      className={handleClassName}
-      {...props}
-      style={{
-        background: "var(--color-blue-500)",
-        height: "10px",
-        width: "10px",
-        border: "1px solid var(--color-blue-700)",
-      }}
-    />
-  </div>
-));
+      color,
+      borderColor,
+      handleClassName,
+      title,
+      position,
+      ...props
+    },
+    ref,
+  ) => (
+    <div
+      ref={ref}
+      title={title}
+      className={cn(
+        "relative flex items-center",
+        flexDirections[position],
+        className,
+      )}
+    >
+      <BaseHandle
+        position={position}
+        className={handleClassName}
+        {...props}
+        style={{
+          background: `${color}`,
+          height: "10px",
+          width: "10px",
+          border: `1px solid ${borderColor}`,
+        }}
+      />
+    </div>
+  ),
+);
 
 LabeledHandle.displayName = "LabeledHandle";

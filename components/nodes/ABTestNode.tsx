@@ -149,6 +149,8 @@ const ABTestNode = memo(function ABTestNode({
           position={Position.Top}
           handleClassName="!absolute !-top-1 !left-1/2 !-translate-x-1/2 !-translate-y-1/2"
           className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2"
+          color="var(--color-highlight-txt)"
+          borderColor="var(--color-highlight)"
         />
 
         <LabeledHandle
@@ -157,6 +159,8 @@ const ABTestNode = memo(function ABTestNode({
           type="source"
           position={Position.Bottom}
           className="pointer-events-auto absolute bottom-[-10px] left-[49%]"
+          color="#ffcc00"
+          borderColor="var(--color-black)"
         />
 
         <BaseNodeHeader>
@@ -169,7 +173,7 @@ const ABTestNode = memo(function ABTestNode({
             </span>
           </BaseNodeHeaderTitle>
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             onClick={openConfiguration}
             className="h-6 w-6 rounded-sm border drop-shadow-sm"

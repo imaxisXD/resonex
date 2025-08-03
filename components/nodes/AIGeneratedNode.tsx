@@ -38,11 +38,21 @@ const AIGeneratedNode = memo(function AIGeneratedNode({
       className="w-[280px] rounded-lg border border-cyan-300 bg-white/80 p-4 shadow-md backdrop-blur-sm"
     >
       <div className="mb-3 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-cyan-500 bg-gradient-to-t from-cyan-100 to-cyan-50">
-          <BotIcon className="size-5 text-cyan-500" strokeWidth={1.5} />
+        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-cyan-500 bg-gradient-to-t from-cyan-50 to-white">
+          <BotIcon className="size-5 text-cyan-600" strokeWidth={1.5} />
         </div>
         <div className="flex-1">
           <h3 className="text-sm font-medium">AI Generated Email</h3>
+          <p className="text-muted-foreground text-xs capitalize">
+            <span
+              className={`mr-1 inline-block h-1.5 w-1.5 rounded-full border ${
+                emailHtml
+                  ? "border-green-600 bg-green-500"
+                  : "border-yellow-600 bg-yellow-400"
+              } align-middle`}
+            />
+            {emailHtml ? "Ready" : "Pending"}
+          </p>
         </div>
       </div>
 

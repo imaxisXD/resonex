@@ -23,11 +23,12 @@ import { useParams } from "next/navigation";
 import ABTestNode from "@/components/nodes/ABTestNode";
 import ContentGenerationNode from "@/components/nodes/ContentGenerationNode";
 import { NodesCMDK } from "@/components/NodesCMDK";
-import { CampaignNode } from "@/components/CampaignNode";
-import { ScheduleNode } from "@/components/ScheduleNode";
+import { ScheduleNode } from "@/components/nodes/ScheduleNode";
 import { AnalyticsNode } from "@/components/nodes/AnalyticsNode";
 import { CampaignNodeData } from "@/lib/connection-rules";
 import { useConnectionRules } from "@/hooks/useConnectionRules";
+import { CampaignNode } from "@/components/nodes/CampaignNode";
+import { RecipientsEmailNode } from "@/components/nodes/RecipientsEmailNode";
 
 interface ABTestNodeData {
   title: string;
@@ -94,6 +95,7 @@ function CampaignPageContent() {
       analyticsNode: AnalyticsNode,
       abTestNode: ABTestNodeWrapper,
       contentGenerationNode: ContentGenerationNode,
+      recipientsEmailNode: RecipientsEmailNode,
     }),
     [ABTestNodeWrapper],
   );
@@ -160,8 +162,17 @@ function CampaignPageContent() {
         type: "scheduleNode",
       },
       {
+        id: "recipients",
+        position: { x: -50, y: 400 },
+        data: {
+          label: "Recipients",
+        } as CampaignNodeData,
+        deletable: false,
+        type: "recipientsEmailNode",
+      },
+      {
         id: "analytics",
-        position: { x: 200, y: 400 },
+        position: { x: 200, y: 550 },
         data: {
           label: "Analytics",
           type: "analytics",
@@ -192,6 +203,7 @@ function CampaignPageContent() {
       { id: "campaign-abTest", source: "campaign", target: "abTestNode" },
       { id: "content-schedule", source: "content", target: "schedule" },
       { id: "content-2-schedule", source: "content-2", target: "schedule" },
+      { id: "recipients-schedule", source: "recipients", target: "schedule" },
       { id: "schedule-analytics", source: "schedule", target: "analytics" },
     ];
   }, [campaign]);
@@ -339,6 +351,15 @@ function CampaignPageContent() {
           type: "abTestNode",
           deletable: false,
         };
+      } else if (nodeType.type === "recipientsEmailNode") {
+        newNode = {
+          id: newId,
+          position,
+          data: {
+            label: nodeType.label,
+          } as CampaignNodeData,
+          type: "recipientsEmailNode",
+        };
       }
 
       if (newNode) {
@@ -397,8 +418,6 @@ function CampaignPageContent() {
   const styledEdges = useMemo(
     () =>
       edges.map((edge) => {
-        // const sourceNode = nodes.find((n) => n.id === edge.source);
-
         return {
           ...edge,
           animated: true,
@@ -432,6 +451,8 @@ function CampaignPageContent() {
         return "var(--color-yellow-400)";
       case "contentGenerationNode":
         return "var(--color-purple-400)";
+      case "recipientsEmailNode":
+        return "var(--color-green-400)";
       default:
         return "var(--color-emerald-400)";
     }

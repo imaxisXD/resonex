@@ -228,6 +228,13 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
           <div className="flex-1">
             <h3 className="text-sm font-medium">{nodeLabel}</h3>
             <p className="text-muted-foreground text-xs capitalize">
+              <span
+                className={`mr-1 inline-block h-1.5 w-1.5 rounded-full border ${
+                  nodeStatus === "ready"
+                    ? "border-green-600 bg-green-500"
+                    : "border-yellow-600 bg-yellow-400"
+                } align-middle`}
+              />
               {nodeStatus}
             </p>
           </div>
@@ -283,10 +290,10 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
           type="target"
           position={Position.Top}
           style={{
-            background: "var(--color-blue-500)",
+            background: "#ffcc00",
             height: "10px",
             width: "10px",
-            border: "1px solid var(--color-blue-700)",
+            border: "1px solid var(--color-black)",
           }}
         />
         <Handle

@@ -57,7 +57,12 @@ export const CampaignNode = ({ data }: CampaignNodeProps) => {
         type="source"
         position={Position.Bottom}
         className="h-3 w-3 border-2 border-white bg-blue-500"
-        style={{ bottom: -6 }}
+        style={{
+          background: "var(--color-highlight-txt)",
+          height: "10px",
+          width: "10px",
+          border: "1px solid var(--color-black)",
+        }}
       />
     </div>
   );

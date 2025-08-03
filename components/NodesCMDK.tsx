@@ -7,6 +7,7 @@ import {
   Mail,
   BarChart3,
   TestTube,
+  Users,
   Trash2,
   RotateCcw,
 } from "lucide-react";
@@ -31,7 +32,8 @@ interface NodeType {
     | "scheduleNode"
     | "analyticsNode"
     | "abTestNode"
-    | "contentGenerationNode";
+    | "contentGenerationNode"
+    | "recipientsEmailNode";
   description: string;
 }
 
@@ -49,6 +51,13 @@ const availableNodes: NodeType[] = [
     icon: FileText,
     type: "contentGenerationNode",
     description: "Generate email content and subject lines",
+  },
+  {
+    id: "recipients",
+    label: "Recipients",
+    icon: Users,
+    type: "recipientsEmailNode",
+    description: "Upload CSV or add email recipients manually",
   },
   {
     id: "schedule",
