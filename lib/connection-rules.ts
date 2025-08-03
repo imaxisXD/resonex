@@ -75,6 +75,11 @@ export const CONNECTION_RULES: ConnectionRule[] = [
     maxConnections: 1,
   },
   {
+    sourceType: "scheduleNode",
+    targetType: "recipientsEmailNode",
+    maxConnections: 1,
+  },
+  {
     sourceType: "*",
     targetType: "*",
     customValidator: () => ({

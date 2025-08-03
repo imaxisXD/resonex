@@ -1,6 +1,6 @@
 "use client";
 import { Handle, Position } from "@xyflow/react";
-import { Mail, Upload, Plus, Users, LoaderIcon, X, AtSign } from "lucide-react";
+import { Upload, Plus, Users, LoaderIcon, X, AtSign } from "lucide-react";
 import { CampaignNodeData } from "@/lib/connection-rules";
 import { memo, useState, useCallback, useRef } from "react";
 import {

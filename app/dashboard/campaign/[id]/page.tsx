@@ -106,7 +106,7 @@ function CampaignPageContent() {
     return [
       {
         id: "campaign",
-        position: { x: 200, y: -500 },
+        position: { x: 148, y: -600 },
         data: {
           label: "Campaign Details",
           type: "campaign",
@@ -147,7 +147,7 @@ function CampaignPageContent() {
       },
       {
         id: "schedule",
-        position: { x: 200, y: 200 },
+        position: { x: 200, y: 300 },
         data: {
           label: "Scheduling",
           type: "schedule",
@@ -163,7 +163,7 @@ function CampaignPageContent() {
       },
       {
         id: "recipients",
-        position: { x: -50, y: 400 },
+        position: { x: 200, y: 500 },
         data: {
           label: "Recipients",
         } as CampaignNodeData,
@@ -203,8 +203,8 @@ function CampaignPageContent() {
       { id: "campaign-abTest", source: "campaign", target: "abTestNode" },
       { id: "content-schedule", source: "content", target: "schedule" },
       { id: "content-2-schedule", source: "content-2", target: "schedule" },
-      { id: "recipients-schedule", source: "recipients", target: "schedule" },
-      { id: "schedule-analytics", source: "schedule", target: "analytics" },
+      { id: "schedule-recipients", source: "schedule", target: "recipients" },
+      // { id: "schedule-analytics", source: "schedule", target: "analytics" },
     ];
   }, [campaign]);
 
@@ -253,7 +253,11 @@ function CampaignPageContent() {
   useEffect(() => {
     if (savedCanvas?.nodes && savedCanvas?.edges) {
       const nodesWithDeletable = savedCanvas.nodes.map((node) => {
-        if (node.id === "campaign" || node.id === "abTestNode") {
+        if (
+          node.id === "campaign" ||
+          node.id === "abTestNode" ||
+          node.id === "recipients"
+        ) {
           return { ...node, deletable: false };
         }
         return node;
@@ -359,6 +363,7 @@ function CampaignPageContent() {
             label: nodeType.label,
           } as CampaignNodeData,
           type: "recipientsEmailNode",
+          deletable: false,
         };
       }
 
@@ -452,7 +457,7 @@ function CampaignPageContent() {
       case "contentGenerationNode":
         return "var(--color-purple-400)";
       case "recipientsEmailNode":
-        return "var(--color-green-400)";
+        return "var(--color-slate-400)";
       default:
         return "var(--color-emerald-400)";
     }
