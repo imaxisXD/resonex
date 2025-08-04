@@ -29,7 +29,7 @@ export default function Dashboard() {
           Create Your First Campaign
         </Link>
       </div>
-      <div>
+      {/* <div>
         <Image
           src="/owl.webp"
           alt="Dashboard Hero"
@@ -40,7 +40,7 @@ export default function Dashboard() {
         <h1 className="text-muted-foreground text-center text-2xl font-semibold">
           Go fast and test your ideas
         </h1>
-      </div>
+      </div> */}
       {campaigns.length > 0 && (
         <div>
           <h2 className="mb-6 text-lg font-semibold text-gray-900">
