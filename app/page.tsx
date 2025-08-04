@@ -16,7 +16,7 @@ import Image from "next/image";
 export const metadata = {
   title: "Resonex",
   description:
-    "AI-powered newsletter automation platform for creators and marketers.",
+    "AI-powered email a/b testing platform for creators and marketers.",
 };
 
 export default function Home() {
@@ -51,16 +51,15 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              AI-Powered Newsletter
+              AI-Powered Email A/B Testing
               <span className="from-convex-yellow to-highlight-txt block bg-gradient-to-r bg-clip-text text-transparent">
-                Automation Platform
+                Platform
               </span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600">
-              Generate engaging newsletters from prompts, A/B test subject
-              lines, and optimize send times with AI-driven insights. Built for
-              creators, marketers, and businesses who want to scale their email
-              marketing.
+              Generate engaging emails from prompts, A/B test subject lines, and
+              optimize send times with AI-driven insights. Built for creators,
+              marketers, and businesses who want to scale their email marketing.
             </p>
             <div className="mt-10 flex items-center justify-center gap-4">
               <Link
@@ -79,7 +78,7 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Everything you need to create winning newsletters
+              Everything you need to create winning emails
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
               From AI content generation to performance optimization, we&apos;ve
@@ -96,7 +95,7 @@ export default function Home() {
                 AI Content Generation
               </h3>
               <p className="text-gray-600">
-                Generate engaging newsletter content from simple prompts. Our AI
+                Generate engaging email content from simple prompts. Our AI
                 creates compelling headlines, body content, and calls-to-action
                 tailored to your audience.
               </p>

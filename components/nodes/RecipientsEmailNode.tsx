@@ -1,8 +1,8 @@
 "use client";
 import { Handle, Position } from "@xyflow/react";
-import { Upload, Plus, Users, LoaderIcon, X, AtSign } from "lucide-react";
+import { Plus, Users, AtSign } from "lucide-react";
 import { CampaignNodeData } from "@/lib/connection-rules";
-import { memo, useState, useCallback, useRef } from "react";
+import { memo, useState, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -30,106 +30,6 @@ export const RecipientsEmailNode = memo(
     const [emails, setEmails] = useState<EmailData[]>([]);
     const [singleEmail, setSingleEmail] = useState("");
     const [singleName, setSingleName] = useState("");
-    const [isDragOver, setIsDragOver] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const parseCSV = useCallback((text: string): EmailData[] => {
-      const lines = text.split("\n");
-      const headers =
-        lines[0]
-          ?.toLowerCase()
-          .split(",")
-          .map((h) => h.trim()) || [];
-      const emailIndex = headers.findIndex((h) => h.includes("email"));
-      const nameIndex = headers.findIndex((h) => h.includes("name"));
-
-      if (emailIndex === -1) return [];
-
-      const parsed: EmailData[] = [];
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-
-        const columns = line
-          .split(",")
-          .map((col) => col.trim().replace(/"/g, ""));
-        const email = columns[emailIndex];
-        const name = nameIndex !== -1 ? columns[nameIndex] : undefined;
-
-        if (email && email.includes("@")) {
-          parsed.push({ email, name });
-        }
-      }
-      return parsed;
-    }, []);
-
-    const handleFileUpload = useCallback(
-      async (file: File) => {
-        if (!file.name.endsWith(".csv")) {
-          alert("Please upload a CSV file");
-          return;
-        }
-
-        setIsUploading(true);
-
-        try {
-          const text = await file.text();
-          const parsedEmails = parseCSV(text);
-
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-
-          setEmails((prev) => {
-            const existingEmails = new Set(prev.map((e) => e.email));
-            const newEmails = parsedEmails.filter(
-              (e) => !existingEmails.has(e.email),
-            );
-            return [...prev, ...newEmails];
-          });
-        } catch (error) {
-          console.error("Error parsing CSV:", error);
-          alert("Error parsing CSV file");
-        } finally {
-          setIsUploading(false);
-        }
-      },
-      [parseCSV],
-    );
-
-    const handleDrop = useCallback(
-      (e: React.DragEvent) => {
-        e.preventDefault();
-        setIsDragOver(false);
-
-        const files = Array.from(e.dataTransfer.files);
-        const csvFile = files.find((file) => file.name.endsWith(".csv"));
-
-        if (csvFile) {
-          handleFileUpload(csvFile);
-        }
-      },
-      [handleFileUpload],
-    );
-
-    const handleDragOver = useCallback((e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragOver(true);
-    }, []);
-
-    const handleDragLeave = useCallback((e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragOver(false);
-    }, []);
-
-    const handleFileSelect = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-          handleFileUpload(file);
-        }
-      },
-      [handleFileUpload],
-    );
 
     const addSingleEmail = useCallback(() => {
       if (singleEmail.trim() && singleEmail.includes("@")) {
@@ -146,114 +46,28 @@ export const RecipientsEmailNode = memo(
       }
     }, [singleEmail, singleName, emails]);
 
-    const removeEmail = useCallback((emailToRemove: string) => {
-      setEmails((prev) => prev.filter((e) => e.email !== emailToRemove));
-    }, []);
-
-    const triggerFileSelect = useCallback(() => {
-      fileInputRef.current?.click();
-    }, []);
-
     const nodeStatus = emails.length > 0 ? "ready" : "pending";
 
-    const DropZone = memo(function DropZone() {
-      return (
-        <div
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onClick={triggerFileSelect}
-          className={cn(
-            "relative flex h-32 w-full cursor-pointer items-center justify-center overflow-hidden rounded-md border-2 border-dashed transition-all duration-200",
-            isDragOver
-              ? "border-blue-400 bg-blue-50"
-              : "border-gray-300 bg-gradient-to-b from-white via-gray-50",
-            isUploading && "pointer-events-none",
-          )}
-        >
-          {isUploading && (
-            <>
-              <div className="holographic-bg pointer-events-none absolute inset-0 z-10 rounded-lg opacity-40" />
-              <div className="shine-bg pointer-events-none absolute inset-0 z-20 rounded-lg" />
-              <div className="pointer-events-none absolute inset-0 z-20">
-                <div className="sparkle-1 absolute h-0.5 w-0.5 rounded-full bg-white" />
-                <div className="sparkle-2 absolute h-0.5 w-0.5 rounded-full bg-white" />
-                <div className="sparkle-3 absolute h-0.5 w-0.5 rounded-full bg-white" />
-                <div className="sparkle-4 absolute h-0.5 w-0.5 rounded-full bg-white" />
-              </div>
-              <div className="border-glow-bg pointer-events-none absolute -inset-0.5 z-0 rounded-lg" />
-            </>
-          )}
-
-          <div className="relative z-30 flex flex-col items-center gap-2 text-gray-500">
-            {isUploading ? (
-              <LoaderIcon className="size-7 animate-spin text-blue-500" />
-            ) : (
-              <Upload className="size-7" strokeWidth={1.5} />
-            )}
-            <div className="text-center text-xs">
-              {isUploading ? (
-                <span className="font-medium text-blue-600">
-                  Uploading CSV...
-                </span>
-              ) : (
-                <>
-                  <div className="font-medium">Drop CSV file here</div>
-                  <div className="text-gray-400">or click to browse</div>
-                </>
-              )}
-            </div>
-          </div>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
-        </div>
-      );
-    });
+    const clearAllEmails = useCallback(() => {
+      setEmails([]);
+    }, []);
 
     const EmailList = memo(function EmailList() {
       if (emails.length === 0) return null;
 
       return (
-        <div className="mt-3 max-h-32 overflow-y-auto rounded-lg border bg-gray-50 p-2">
-          <div className="mb-2 flex items-center gap-1 text-xs font-medium text-gray-600">
-            <Users className="size-3" />
-            {emails.length} recipient{emails.length !== 1 ? "s" : ""}
-          </div>
-          <div className="space-y-1">
-            {emails.slice(0, 5).map((emailData, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between rounded bg-white px-2 py-1"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-xs font-medium">
-                    {emailData.name || emailData.email}
-                  </div>
-                  {emailData.name && (
-                    <div className="truncate text-xs text-gray-500">
-                      {emailData.email}
-                    </div>
-                  )}
-                </div>
-                <button
-                  onClick={() => removeEmail(emailData.email)}
-                  className="ml-2 flex-shrink-0 text-gray-400 hover:text-red-500"
-                >
-                  <X className="size-3" />
-                </button>
-              </div>
-            ))}
-            {emails.length > 5 && (
-              <div className="text-center text-xs text-gray-500">
-                +{emails.length - 5} more...
-              </div>
-            )}
+        <div className="mt-3 rounded-lg border bg-gray-50 p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <Users className="size-4" />
+              {emails.length} recipient{emails.length !== 1 ? "s" : ""} added
+            </div>
+            <button
+              onClick={clearAllEmails}
+              className="text-xs text-gray-500 transition-colors hover:text-red-500"
+            >
+              Clear all
+            </button>
           </div>
         </div>
       );
@@ -261,22 +75,7 @@ export const RecipientsEmailNode = memo(
 
     return (
       <div className="relative">
-        {isUploading && (
-          <>
-            <div className="gradient-slide-bg absolute -inset-4 -z-10 translate-x-1.5 translate-y-1.5 animate-[gradient-slide_6s_linear_infinite] rounded-xl opacity-50 blur-lg" />
-            <div className="holographic-bg pointer-events-none absolute inset-0 z-10 rounded-lg opacity-70" />
-            <div className="shine-bg pointer-events-none absolute inset-0 z-20 rounded-lg" />
-            <div className="pointer-events-none absolute inset-0 z-20">
-              <div className="sparkle-1 absolute h-1 w-1 rounded-full bg-white" />
-              <div className="sparkle-2 absolute h-1 w-1 rounded-full bg-white" />
-              <div className="sparkle-3 absolute h-1 w-1 rounded-full bg-white" />
-              <div className="sparkle-4 absolute h-1 w-1 rounded-full bg-white" />
-            </div>
-            <div className="border-glow-bg pointer-events-none absolute -inset-0.5 z-0 rounded-lg" />
-          </>
-        )}
-
-        <div className="relative z-30 w-[280px] rounded-lg border bg-white/90 p-4 shadow-md backdrop-blur-sm">
+        <div className="w-[280px] rounded-lg border bg-white/90 p-4 shadow-md backdrop-blur-sm">
           <div className="mb-3 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-md border border-green-500 bg-gradient-to-t from-green-50 to-white">
               <AtSign className="size-5 text-green-500" strokeWidth={1.5} />
@@ -298,10 +97,9 @@ export const RecipientsEmailNode = memo(
 
           <div className="mb-3 space-y-2 text-xs">
             <p className="text-muted-foreground">
-              Upload a CSV file with email addresses or add recipients manually.
+              Add email recipients manually to your campaign.
             </p>
 
-            <DropZone />
             <EmailList />
           </div>
 
@@ -313,13 +111,13 @@ export const RecipientsEmailNode = memo(
               )}
             >
               <Plus className="size-4" />
-              Add Single Email
+              Add Email
             </DialogTrigger>
             <DialogContent className="left-[47%] w-full !max-w-[30rem] bg-white">
               <DialogHeader>
-                <DialogTitle>Add Single Recipient</DialogTitle>
+                <DialogTitle>Add Recipient</DialogTitle>
                 <DialogDescription>
-                  Add a single email address to your recipient list.
+                  Add an email address to your recipient list.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 pt-4">

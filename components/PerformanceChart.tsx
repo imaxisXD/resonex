@@ -18,7 +18,6 @@ interface PerformanceChartProps {
 }
 
 export default function PerformanceChart({ campaigns }: PerformanceChartProps) {
-  // Find the best performing sent campaign for display
   const sentCampaigns = campaigns.filter(
     (c) => c.status === "sent" && c.openRateA && c.openRateB,
   );
@@ -35,21 +34,21 @@ export default function PerformanceChart({ campaigns }: PerformanceChartProps) {
       : null;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+    <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <h3 className="mb-4 text-lg font-semibold text-gray-900">
         A/B Test Performance
       </h3>
 
       {!bestCampaign ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500 mb-2">No A/B test results yet</p>
+        <div className="py-8 text-center">
+          <p className="mb-2 text-gray-500">No A/B test results yet</p>
           <p className="text-xs text-gray-400">
             Send a campaign to see performance data
           </p>
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="text-sm text-gray-600 mb-3">
+          <div className="mb-3 text-sm text-gray-600">
             Best performing campaign:{" "}
             <span className="font-medium">{bestCampaign.title}</span>
           </div>
@@ -64,13 +63,13 @@ export default function PerformanceChart({ campaigns }: PerformanceChartProps) {
                 {bestCampaign.openRateA?.toFixed(1)}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="h-2 w-full rounded-full bg-gray-200">
               <div
-                className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500"
+                className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
                 style={{ width: `${bestCampaign.openRateA}%` }}
               ></div>
             </div>
-            <p className="text-xs text-gray-500 truncate">
+            <p className="truncate text-xs text-gray-500">
               {bestCampaign.subjectLines.A}
             </p>
           </div>
@@ -85,21 +84,21 @@ export default function PerformanceChart({ campaigns }: PerformanceChartProps) {
                 {bestCampaign.openRateB?.toFixed(1)}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="h-2 w-full rounded-full bg-gray-200">
               <div
-                className="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all duration-500"
+                className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 transition-all duration-500"
                 style={{ width: `${bestCampaign.openRateB}%` }}
               ></div>
             </div>
-            <p className="text-xs text-gray-500 truncate">
+            <p className="truncate text-xs text-gray-500">
               {bestCampaign.subjectLines.B}
             </p>
           </div>
 
           {/* Winner indicator */}
-          <div className="mt-4 p-3 bg-green-50 rounded-lg">
+          <div className="mt-4 rounded-lg bg-green-50 p-3">
             <div className="flex items-center gap-2">
-              <span className="text-green-600 font-semibold">🏆 Winner:</span>
+              <span className="font-semibold text-green-600">🏆 Winner:</span>
               <span className="text-sm font-medium text-green-800">
                 Subject{" "}
                 {(bestCampaign.openRateA || 0) > (bestCampaign.openRateB || 0)
@@ -107,7 +106,7 @@ export default function PerformanceChart({ campaigns }: PerformanceChartProps) {
                   : "B"}
               </span>
             </div>
-            <p className="text-xs text-green-600 mt-1">
+            <p className="mt-1 text-xs text-green-600">
               {Math.abs(
                 (bestCampaign.openRateA || 0) - (bestCampaign.openRateB || 0),
               ).toFixed(1)}

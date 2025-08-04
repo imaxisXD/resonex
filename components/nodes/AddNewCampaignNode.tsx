@@ -161,7 +161,7 @@ const AddNewCampaignNode: React.FC<NodeProps> = memo(({ data, selected }) => {
         const campaignId = await addNewCampaign({
           campaignName,
           prompt: content,
-          category: emailType,
+          category: "newsletter",
         });
         return campaignId;
       },
@@ -234,7 +234,6 @@ const AddNewCampaignNode: React.FC<NodeProps> = memo(({ data, selected }) => {
             </SelectTrigger>
             <SelectContent align="center" className="text-xs">
               <SelectItem value="newsletter">Newsletter</SelectItem>
-              <SelectItem value="marketing">Marketing Campaign</SelectItem>
             </SelectContent>
           </Select>
         </div>

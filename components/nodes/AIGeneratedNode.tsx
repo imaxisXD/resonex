@@ -57,7 +57,7 @@ const AIGeneratedNode = memo(function AIGeneratedNode({
       </div>
 
       <div className="mb-3 space-y-2 text-xs">
-        <div className="relative z-30 flex h-32 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-300/60 bg-gray-100">
+        <div className="relative flex h-32 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-gray-300/60 bg-gray-100">
           <iframe
             className="h-full w-full origin-center scale-[40%] transform bg-white"
             srcDoc={emailHtml}

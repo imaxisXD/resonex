@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useEffect, useCallback } from "react";
+import { useMemo, useEffect, useCallback, useRef } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -24,7 +24,6 @@ import ABTestNode from "@/components/nodes/ABTestNode";
 import ContentGenerationNode from "@/components/nodes/ContentGenerationNode";
 import { NodesCMDK } from "@/components/NodesCMDK";
 import { ScheduleNode } from "@/components/nodes/ScheduleNode";
-import { AnalyticsNode } from "@/components/nodes/AnalyticsNode";
 import { CampaignNodeData } from "@/lib/connection-rules";
 import { useConnectionRules } from "@/hooks/useConnectionRules";
 import { CampaignNode } from "@/components/nodes/CampaignNode";
@@ -35,6 +34,12 @@ interface ABTestNodeData {
   target: string;
   maxConnections?: number;
   outputEdges?: number;
+}
+
+interface ScheduleNodeData extends CampaignNodeData {
+  selectedDate?: Date | string;
+  selectedTime?: string | null;
+  [key: string]: unknown;
 }
 
 type ExtendedNodeProps = {
@@ -67,10 +72,24 @@ function CampaignPageContent() {
 
   const { updateNodeData } = useReactFlow();
 
+  // Track if initial restoration from savedCanvas has happened
+  const hasRestoredInitialState = useRef(false);
+
   const handleOutputEdgesChange = useCallback(
     (id: string) => (count: number) => {
       updateNodeData(id, { outputEdges: count });
     },
+    [updateNodeData],
+  );
+
+  const handleScheduleDataChange = useCallback(
+    (id: string) =>
+      (scheduleData: {
+        selectedDate?: Date | string;
+        selectedTime?: string | null;
+      }) => {
+        updateNodeData(id, scheduleData);
+      },
     [updateNodeData],
   );
 
@@ -88,16 +107,27 @@ function CampaignPageContent() {
     [handleOutputEdgesChange],
   );
 
+  const ScheduleNodeWrapper = useCallback(
+    ({ data, id }: { data: ScheduleNodeData; id: string }) => {
+      return (
+        <ScheduleNode
+          data={data}
+          onScheduleDataChange={handleScheduleDataChange(id)}
+        />
+      );
+    },
+    [handleScheduleDataChange],
+  );
+
   const nodeTypes = useMemo(
     () => ({
       campaignNode: CampaignNode,
-      scheduleNode: ScheduleNode,
-      analyticsNode: AnalyticsNode,
+      scheduleNode: ScheduleNodeWrapper,
       abTestNode: ABTestNodeWrapper,
       contentGenerationNode: ContentGenerationNode,
       recipientsEmailNode: RecipientsEmailNode,
     }),
-    [ABTestNodeWrapper],
+    [ABTestNodeWrapper, ScheduleNodeWrapper],
   );
 
   const initialNodes = useMemo(() => {
@@ -106,7 +136,7 @@ function CampaignPageContent() {
     return [
       {
         id: "campaign",
-        position: { x: 148, y: -600 },
+        position: { x: 198, y: -600 },
         data: {
           label: "Campaign Details",
           type: "campaign",
@@ -129,7 +159,7 @@ function CampaignPageContent() {
       },
       {
         id: "content",
-        position: { x: 0, y: -50 },
+        position: { x: -300, y: -50 },
         data: {
           label: "Content Generation",
           data: campaign,
@@ -138,7 +168,7 @@ function CampaignPageContent() {
       },
       {
         id: "content-2",
-        position: { x: 400, y: -50 },
+        position: { x: 600, y: -50 },
         data: {
           label: "Content Generation",
           data: campaign,
@@ -158,28 +188,19 @@ function CampaignPageContent() {
               : campaign.status === "draft"
                 ? "pending"
                 : "disabled",
-        } as CampaignNodeData,
+          selectedDate: undefined,
+          selectedTime: null,
+        } satisfies ScheduleNodeData,
         type: "scheduleNode",
       },
       {
         id: "recipients",
-        position: { x: 200, y: 500 },
+        position: { x: 200, y: 800 },
         data: {
           label: "Recipients",
         } as CampaignNodeData,
         deletable: false,
         type: "recipientsEmailNode",
-      },
-      {
-        id: "analytics",
-        position: { x: 200, y: 550 },
-        data: {
-          label: "Analytics",
-          type: "analytics",
-          data: campaign,
-          status: campaign.status === "sent" ? "completed" : "disabled",
-        } as CampaignNodeData,
-        type: "analyticsNode",
       },
     ];
   }, [campaign]);
@@ -204,7 +225,6 @@ function CampaignPageContent() {
       { id: "content-schedule", source: "content", target: "schedule" },
       { id: "content-2-schedule", source: "content-2", target: "schedule" },
       { id: "schedule-recipients", source: "schedule", target: "recipients" },
-      // { id: "schedule-analytics", source: "schedule", target: "analytics" },
     ];
   }, [campaign]);
 
@@ -221,11 +241,25 @@ function CampaignPageContent() {
             campaignId as import("@/convex/_generated/dataModel").Id<"campaigns">,
           nodes: nodes.map((node) => {
             const extendedNode = node as Node & ExtendedNodeProps;
+
+            // Serialize Date objects to strings for Convex storage
+            let serializedData: Record<string, unknown> = { ...node.data };
+            if (
+              node.type === "scheduleNode" &&
+              "selectedDate" in serializedData &&
+              serializedData.selectedDate instanceof Date
+            ) {
+              serializedData = {
+                ...serializedData,
+                selectedDate: serializedData.selectedDate.toISOString(),
+              };
+            }
+
             return {
               id: node.id,
               type: node.type,
               position: node.position,
-              data: node.data,
+              data: serializedData,
               measured: extendedNode.measured || { width: 200, height: 100 },
               hidden: extendedNode.hidden,
               zIndex: extendedNode.zIndex,
@@ -251,22 +285,50 @@ function CampaignPageContent() {
   }, [campaignId, nodes, edges, saveCanvas]);
 
   useEffect(() => {
+    // Skip restoration if we've already restored initial state
+    if (hasRestoredInitialState.current) {
+      return;
+    }
+
+    // Try to restore from savedCanvas first
     if (savedCanvas?.nodes && savedCanvas?.edges) {
       const nodesWithDeletable = savedCanvas.nodes.map((node) => {
+        let processedNode = node;
+
+        // Deserialize Date strings back to Date objects for schedule nodes
         if (
-          node.id === "campaign" ||
-          node.id === "abTestNode" ||
-          node.id === "recipients"
+          node.type === "scheduleNode" &&
+          node.data.selectedDate &&
+          typeof node.data.selectedDate === "string"
         ) {
-          return { ...node, deletable: false };
+          processedNode = {
+            ...node,
+            data: {
+              ...node.data,
+              selectedDate: new Date(node.data.selectedDate),
+            },
+          };
         }
-        return node;
+
+        if (
+          processedNode.id === "campaign" ||
+          processedNode.id === "abTestNode" ||
+          processedNode.id === "recipients"
+        ) {
+          return { ...processedNode, deletable: false };
+        }
+        return processedNode;
       });
       setNodes(nodesWithDeletable);
       setEdges(savedCanvas.edges);
-    } else if (campaign && initialNodes.length > 0) {
+      hasRestoredInitialState.current = true;
+    }
+    // Fallback to initial nodes if no saved canvas and campaign is loaded
+    else if (campaign && initialNodes.length > 0 && savedCanvas !== undefined) {
+      // Only set initial nodes if savedCanvas query has completed (even if empty)
       setNodes(initialNodes);
       setEdges(initialEdges);
+      hasRestoredInitialState.current = true;
     }
   }, [savedCanvas, campaign, initialNodes, initialEdges, setNodes, setEdges]);
 
@@ -315,22 +377,12 @@ function CampaignPageContent() {
           data: {
             label: nodeType.label,
             type: "schedule",
-            data: campaign || {},
+            data: campaign!,
             status: "pending",
-          } as CampaignNodeData,
+            selectedDate: undefined,
+            selectedTime: null,
+          } satisfies ScheduleNodeData,
           type: "scheduleNode",
-        };
-      } else if (nodeType.id === "analytics") {
-        newNode = {
-          id: newId,
-          position,
-          data: {
-            label: nodeType.label,
-            type: "analytics",
-            data: campaign || {},
-            status: "pending",
-          } as CampaignNodeData,
-          type: "analyticsNode",
         };
       } else if (nodeType.type === "contentGenerationNode") {
         newNode = {
@@ -450,8 +502,6 @@ function CampaignPageContent() {
         return "var(--color-blue-400)";
       case "scheduleNode":
         return "var(--color-green-500)";
-      case "analyticsNode":
-        return "var(--color-pink-400)";
       case "abTestNode":
         return "var(--color-yellow-400)";
       case "contentGenerationNode":

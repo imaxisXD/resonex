@@ -36,15 +36,6 @@ export const CampaignNode = ({ data }: CampaignNodeProps) => {
 
         <div>
           <span className="mb-1.5 block text-xs font-medium text-gray-800">
-            Category:
-          </span>
-          <div className="w-full rounded-sm bg-gray-50 px-2 py-1.5 text-xs text-gray-600 capitalize">
-            {data.data.category}
-          </div>
-        </div>
-
-        <div>
-          <span className="mb-1.5 block text-xs font-medium text-gray-800">
             Topic:
           </span>
           <div className="w-full rounded-sm bg-gray-50 px-2 py-1.5 text-xs text-gray-600">

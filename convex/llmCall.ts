@@ -61,7 +61,7 @@ QUALITY STANDARDS:
 - Subject line: 30-50 characters, clear value proposition
 - Body: Professional tone, clear structure, scannable content
 - CTA: Action-oriented, specific (3-5 words max)
-- Use {name} placeholder for personalization when appropriate
+- Never use {name} placeholder for personalization always do generic personalization like Hello, Hi, etc.
 - Ensure mobile-friendly formatting
 - Focus on one primary call-to-action
 

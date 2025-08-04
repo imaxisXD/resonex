@@ -4,12 +4,11 @@ import Link from "next/link";
 import DashboardIcon from "./icons/DashboardIcon";
 import MailIcon from "./icons/MailIcon";
 import AnalyticsIcon from "./icons/AnalyticsIcon";
-import CalendarIcon from "./icons/CalendarIcon";
 import SettingsIcon from "./icons/SettingsIcon";
 import Image from "next/image";
 import { buttonVariants } from "./ui/button";
 import { cn } from "@/lib/utils";
-import { PlusCircle } from "lucide-react";
+import { LogsIcon, PlusCircle } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -83,14 +82,13 @@ export default function Sidebar() {
           <span className="text-sm">Analytics</span>
         </div>
 
-        <div
-          className={getNavItemClasses(
-            pathname.includes("/scheduling") || pathname.includes("/calendar"),
-          )}
+        <Link
+          href="/dashboard/logs"
+          className={getNavItemClasses(pathname.includes("/logs"))}
         >
-          <CalendarIcon className="h-5 w-5" />
-          <span className="text-sm">Scheduling</span>
-        </div>
+          <LogsIcon className="h-5 w-5" />
+          <span className="text-sm">Logs</span>
+        </Link>
 
         <div className={getNavItemClasses(pathname.includes("/settings"))}>
           <SettingsIcon className="h-5 w-5" />

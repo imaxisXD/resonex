@@ -1,7 +1,7 @@
 "use client";
 import { CalendarClock, CalendarCog } from "lucide-react";
 import { CampaignNodeData } from "@/lib/connection-rules";
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import { CalendarDate } from "../calendar-date";
 import {
   Dialog,
@@ -16,16 +16,79 @@ import { Handle, Position } from "@xyflow/react";
 import { cn } from "@/lib/utils";
 
 interface ScheduleNodeProps {
-  data: CampaignNodeData;
+  data: CampaignNodeData & {
+    selectedDate?: Date | string;
+    selectedTime?: string | null;
+  };
+  onScheduleDataChange?: (scheduleData: {
+    selectedDate?: Date;
+    selectedTime?: string | null;
+  }) => void;
 }
 
-export const ScheduleNode = memo(function ScheduleNode({}: ScheduleNodeProps) {
+export const ScheduleNode = memo(function ScheduleNode({
+  data,
+  onScheduleDataChange,
+}: ScheduleNodeProps) {
   const [open, setOpen] = useState(false);
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [date, setDate] = useState<Date | undefined>(() => {
+    if (data.selectedDate) {
+      return data.selectedDate instanceof Date
+        ? data.selectedDate
+        : new Date(data.selectedDate);
+    }
+    return new Date();
+  });
+  const [selectedTime, setSelectedTime] = useState<string | null>(
+    data.selectedTime || null,
+  );
+
+  useEffect(() => {
+    // Don't update local state when dialog is open to prevent calendar from rerendering
+    // while user is actively selecting date/time
+    if (open) return;
+
+    // Update date if it's different from current local state
+    if (data.selectedDate !== undefined) {
+      const dateValue =
+        data.selectedDate instanceof Date
+          ? data.selectedDate
+          : typeof data.selectedDate === "string"
+            ? new Date(data.selectedDate)
+            : data.selectedDate;
+
+      // Only update if the date is actually different
+      if (dateValue && (!date || dateValue.getTime() !== date.getTime())) {
+        setDate(dateValue);
+      }
+    }
+
+    // Update time if it's different from current local state
+    if (data.selectedTime !== undefined && data.selectedTime !== selectedTime) {
+      setSelectedTime(data.selectedTime);
+    }
+  }, [data.selectedDate, data.selectedTime, open, date, selectedTime]);
+
+  const handleScheduleUpdate = (newDate?: Date, newTime?: string | null) => {
+    // Update local state immediately for immediate UI feedback
+    if (newDate !== undefined) {
+      setDate(newDate);
+    }
+    if (newTime !== undefined) {
+      setSelectedTime(newTime);
+    }
+
+    // Update parent component
+    if (onScheduleDataChange) {
+      onScheduleDataChange({
+        selectedDate: newDate,
+        selectedTime: newTime,
+      });
+    }
+  };
 
   return (
-    <div className="relative z-30 w-[280px] rounded-lg border bg-white/90 p-4 shadow-md backdrop-blur-sm">
+    <div className="relative w-[280px] rounded-lg border bg-white/90 p-4 shadow-md backdrop-blur-sm">
       <div className="mb-3 flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-md border border-blue-500 bg-gradient-to-t from-blue-50 to-white">
           <CalendarClock className="size-5 text-blue-500" strokeWidth={1.5} />
@@ -90,8 +153,17 @@ export const ScheduleNode = memo(function ScheduleNode({}: ScheduleNodeProps) {
             </DialogDescription>
             <CalendarDate
               close={() => setOpen(false)}
-              onSelect={(date) => {
-                console.log("selected date and time", date);
+              onSelect={(utcString) => {
+                const selectedDateTime = new Date(utcString);
+                const timeString = selectedDateTime.toLocaleTimeString(
+                  "en-US",
+                  {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  },
+                );
+                handleScheduleUpdate(selectedDateTime, timeString);
               }}
               date={date}
               setDate={setDate}

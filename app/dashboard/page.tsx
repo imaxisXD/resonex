@@ -51,27 +51,34 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 pt-16 pb-5 pl-4">
-      <div>
-        <h2 className="mb-6 text-lg font-semibold text-gray-900">
-          Key Metrics
-        </h2>
-        {/* <MetricDashboard analytics={userAnalytics} /> */}
-      </div>
+      {campaigns.length > 0 && (
+        <div>
+          <h2 className="mb-6 text-lg font-semibold text-gray-900">
+            Key Metrics
+          </h2>
+          {/* <MetricDashboard analytics={userAnalytics} /> */}
+        </div>
+      )}
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Recent Campaigns
-            </h2>
-            <Link
-              href="/dashboard/campaigns"
-              className={cn(buttonVariants({ variant: "outline" }), "text-sm")}
-            >
-              View all campaigns
-            </Link>
-          </div>
+          {campaigns.length > 0 && (
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Recent Campaigns
+              </h2>
+              <Link
+                href="/dashboard/campaigns"
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "text-sm",
+                )}
+              >
+                View all campaigns
+              </Link>
+            </div>
+          )}
 
           {campaigns.length === 0 ? (
             <div className="rounded-lg bg-gray-50 p-8 text-center">
@@ -103,42 +110,44 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div>
-        <h2 className="mb-6 text-lg font-semibold text-gray-900">
-          Performance Insights
-        </h2>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <div className="rounded-lg border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-6">
-            <h3 className="mb-2 text-lg font-semibold text-blue-900">
-              Best Performing Day
-            </h3>
-            <p className="text-3xl font-bold text-blue-700">Tuesday</p>
-            <p className="mt-1 text-sm text-blue-600">
-              {/* {userAnalytics.averageOpenRate.toFixed(1)}% avg open rate */}
-            </p>
-          </div>
-          <div className="rounded-lg border border-green-200 bg-gradient-to-br from-green-50 to-green-100 p-6">
-            <h3 className="mb-2 text-lg font-semibold text-green-900">
-              Optimal Send Time
-            </h3>
-            <p className="text-3xl font-bold text-green-700">10:00 AM</p>
-            <p className="mt-1 text-sm text-green-600">
-              Peak engagement window
-            </p>
-          </div>
-          <div className="rounded-lg border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-6">
-            <h3 className="mb-2 text-lg font-semibold text-purple-900">
-              A/B Test Winner
-            </h3>
-            <p className="text-3xl font-bold text-purple-700">
-              {/* {userAnalytics.abTestUplift.toFixed(1)}% */}
-            </p>
-            <p className="mt-1 text-sm text-purple-600">
-              Average uplift from testing
-            </p>
+      {campaigns.length > 0 && (
+        <div>
+          <h2 className="mb-6 text-lg font-semibold text-gray-900">
+            Performance Insights
+          </h2>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div className="rounded-lg border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-6">
+              <h3 className="mb-2 text-lg font-semibold text-blue-900">
+                Best Performing Day
+              </h3>
+              <p className="text-3xl font-bold text-blue-700">Tuesday</p>
+              <p className="mt-1 text-sm text-blue-600">
+                {/* {userAnalytics.averageOpenRate.toFixed(1)}% avg open rate */}
+              </p>
+            </div>
+            <div className="rounded-lg border border-green-200 bg-gradient-to-br from-green-50 to-green-100 p-6">
+              <h3 className="mb-2 text-lg font-semibold text-green-900">
+                Optimal Send Time
+              </h3>
+              <p className="text-3xl font-bold text-green-700">10:00 AM</p>
+              <p className="mt-1 text-sm text-green-600">
+                Peak engagement window
+              </p>
+            </div>
+            <div className="rounded-lg border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-6">
+              <h3 className="mb-2 text-lg font-semibold text-purple-900">
+                A/B Test Winner
+              </h3>
+              <p className="text-3xl font-bold text-purple-700">
+                {/* {userAnalytics.abTestUplift.toFixed(1)}% */}
+              </p>
+              <p className="mt-1 text-sm text-purple-600">
+                Average uplift from testing
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -5,7 +5,6 @@ import {
   Calendar,
   FileText,
   Mail,
-  BarChart3,
   TestTube,
   Users,
   Trash2,
@@ -30,7 +29,6 @@ interface NodeType {
   type:
     | "campaignNode"
     | "scheduleNode"
-    | "analyticsNode"
     | "abTestNode"
     | "contentGenerationNode"
     | "recipientsEmailNode";
@@ -65,13 +63,6 @@ const availableNodes: NodeType[] = [
     icon: Calendar,
     type: "scheduleNode",
     description: "Schedule campaign delivery times",
-  },
-  {
-    id: "analytics",
-    label: "Analytics",
-    icon: BarChart3,
-    type: "analyticsNode",
-    description: "Track campaign performance metrics",
   },
   {
     id: "abtest",
@@ -151,10 +142,10 @@ export function NodesCMDK({
               .filter((node) => {
                 // Only prevent duplicates for specific node types
                 const restrictedTypes = [
-                  "analyticsNode",
                   "scheduleNode",
                   "campaignNode",
                   "abTestNode",
+                  "recipientsEmailNode",
                 ];
                 if (restrictedTypes.includes(node.type)) {
                   return !currentNodes.some((n) => n.type === node.type);
