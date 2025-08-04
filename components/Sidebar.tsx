@@ -84,10 +84,13 @@ export default function Sidebar() {
           <span className="text-sm">Logs</span>
         </Link>
 
-        <div className={getNavItemClasses(pathname.includes("/settings"))}>
+        <Link
+          href="/dashboard/settings"
+          className={getNavItemClasses(pathname.includes("/settings"))}
+        >
           <SettingsIcon className="h-5 w-5" />
           <span className="text-sm">Settings</span>
-        </div>
+        </Link>
       </nav>
     </div>
   );
