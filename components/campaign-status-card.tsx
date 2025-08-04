@@ -1,10 +1,11 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import { CardSpotlight } from "./ui/card-spotlight";
 import { type Node, type Edge } from "@xyflow/react";
 import { checkWorkflowReadiness } from "@/lib/utils";
 import { CheckCircleIcon, AlertCircleIcon, XCircleIcon } from "lucide-react";
+import confetti from "canvas-confetti";
 
 export default memo(function CampaignStatusCard({
   campaignStatus,
@@ -15,12 +16,34 @@ export default memo(function CampaignStatusCard({
   nodes: Node[];
   edges: Edge[];
 }) {
+  const [isRunning, setIsRunning] = useState(false);
+  console.log(isRunning);
   const workflowStatus = useMemo(() => {
     return checkWorkflowReadiness(nodes, edges);
   }, [nodes, edges]);
 
   const statusConfig = useMemo(() => {
-    if (workflowStatus.isReady) {
+    if (campaignStatus === "scheduled") {
+      return {
+        title: isRunning ? "Campaign is Running" : "Campaign is Running",
+        subtitle: `Campaign ready to launch`,
+        buttonText: isRunning ? "Running" : "Launch Campaign",
+        buttonVariant: isRunning ? ("outline" as const) : ("default" as const),
+        icon: CheckCircleIcon,
+        iconColor: "text-green-600",
+        bgColor: "rgba(34, 197, 94, 0.25)",
+      };
+    } else if (campaignStatus === "sent") {
+      return {
+        title: "Campaign Completed",
+        subtitle: "Campaign has been sent",
+        buttonText: "Campaign Sent",
+        buttonVariant: "outline" as const,
+        icon: CheckCircleIcon,
+        iconColor: "text-green-600",
+        bgColor: "rgba(34, 197, 94, 0.25)",
+      };
+    } else if (workflowStatus.isReady) {
       return {
         title: "Campaign is Ready",
         subtitle: `All ${workflowStatus.summary.totalNodes} nodes configured`,
@@ -51,13 +74,22 @@ export default memo(function CampaignStatusCard({
         bgColor: "rgba(245, 158, 11, 0.25)",
       };
     }
-  }, [workflowStatus]);
+  }, [workflowStatus, campaignStatus, isRunning]);
+
+  const shouldShowCard =
+    campaignStatus === "draft" ||
+    campaignStatus === "scheduled" ||
+    campaignStatus === "sent" ||
+    workflowStatus.isReady;
+  if (isRunning) {
+    return null;
+  }
 
   return (
     <CardSpotlight
       className={
         "absolute top-8 left-6 z-50 flex h-[120px] w-[250px] flex-col gap-2 rounded-lg border shadow-2xs backdrop-blur-sm " +
-        (workflowStatus.isReady ? "opacity-100" : "opacity-0")
+        (shouldShowCard ? "opacity-100" : "opacity-0")
       }
     >
       <div className="relative h-full w-full overflow-hidden rounded-lg">
@@ -92,9 +124,16 @@ export default memo(function CampaignStatusCard({
             variant={"outline"}
             size="sm"
             onClick={() => {
-              console.log("Button clicked!", statusConfig.buttonText);
+              if (campaignStatus === "draft") {
+                confetti({
+                  particleCount: 100,
+                  spread: 100,
+                  origin: { y: 0.6 },
+                });
+                setIsRunning(true);
+              }
             }}
-            disabled={campaignStatus === "sent"}
+            // disabled={campaignStatus === "sent" || isRunning}
           >
             {statusConfig.buttonText}
           </Button>
