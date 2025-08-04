@@ -28,6 +28,7 @@ import { CampaignNodeData } from "@/lib/connection-rules";
 import { useConnectionRules } from "@/hooks/useConnectionRules";
 import { CampaignNode } from "@/components/nodes/CampaignNode";
 import { RecipientsEmailNode } from "@/components/nodes/RecipientsEmailNode";
+import CampaignStatusCard from "@/components/campaign-status-card";
 
 interface ABTestNodeData {
   title: string;
@@ -40,6 +41,16 @@ interface ScheduleNodeData extends CampaignNodeData {
   selectedDate?: Date | string;
   selectedTime?: string | null;
   [key: string]: unknown;
+}
+
+interface EmailData {
+  email: string;
+  name?: string;
+}
+
+interface RecipientsEmailNodeData extends Record<string, unknown> {
+  label: string;
+  emails?: EmailData[];
 }
 
 type ExtendedNodeProps = {
@@ -93,6 +104,13 @@ function CampaignPageContent() {
     [updateNodeData],
   );
 
+  const handleEmailDataChange = useCallback(
+    (id: string) => (emails: EmailData[]) => {
+      updateNodeData(id, { emails });
+    },
+    [updateNodeData],
+  );
+
   const ABTestNodeWrapper = useCallback(
     ({ data, id }: { data: ABTestNodeData; id: string }) => {
       return (
@@ -119,15 +137,27 @@ function CampaignPageContent() {
     [handleScheduleDataChange],
   );
 
+  const RecipientsEmailNodeWrapper = useCallback(
+    ({ data, id }: { data: RecipientsEmailNodeData; id: string }) => {
+      return (
+        <RecipientsEmailNode
+          data={data}
+          onEmailDataChange={handleEmailDataChange(id)}
+        />
+      );
+    },
+    [handleEmailDataChange],
+  );
+
   const nodeTypes = useMemo(
     () => ({
       campaignNode: CampaignNode,
       scheduleNode: ScheduleNodeWrapper,
       abTestNode: ABTestNodeWrapper,
       contentGenerationNode: ContentGenerationNode,
-      recipientsEmailNode: RecipientsEmailNode,
+      recipientsEmailNode: RecipientsEmailNodeWrapper,
     }),
-    [ABTestNodeWrapper, ScheduleNodeWrapper],
+    [ABTestNodeWrapper, ScheduleNodeWrapper, RecipientsEmailNodeWrapper],
   );
 
   const initialNodes = useMemo(() => {
@@ -159,7 +189,7 @@ function CampaignPageContent() {
       },
       {
         id: "content",
-        position: { x: -300, y: -50 },
+        position: { x: -200, y: -50 },
         data: {
           label: "Content Generation",
           data: campaign,
@@ -198,7 +228,8 @@ function CampaignPageContent() {
         position: { x: 200, y: 800 },
         data: {
           label: "Recipients",
-        } as CampaignNodeData,
+          emails: [],
+        } as RecipientsEmailNodeData,
         deletable: false,
         type: "recipientsEmailNode",
       },
@@ -230,7 +261,9 @@ function CampaignPageContent() {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
+  edges.forEach((edge) => {
+    console.log(edge);
+  });
   const { isValidConnection } = useConnectionRules(nodes, edges);
 
   const handleSaveCanvas = useCallback(async () => {
@@ -413,7 +446,8 @@ function CampaignPageContent() {
           position,
           data: {
             label: nodeType.label,
-          } as CampaignNodeData,
+            emails: [],
+          } as RecipientsEmailNodeData,
           type: "recipientsEmailNode",
           deletable: false,
         };
@@ -469,7 +503,7 @@ function CampaignPageContent() {
         });
       }
     },
-    [setNodes, setEdges, deleteEmailNode, campaignId],
+    [setNodes, setEdges, deleteEmailNode, campaignId, handleSaveCanvas],
   );
 
   const styledEdges = useMemo(
@@ -491,7 +525,7 @@ function CampaignPageContent() {
           },
         };
       }),
-    [edges, nodes],
+    [edges],
   );
 
   if (!campaign) return null;
@@ -522,6 +556,11 @@ function CampaignPageContent() {
           onResetToDefault={onResetToDefault}
         />
       </div>
+      <CampaignStatusCard
+        campaignStatus={campaign.status}
+        nodes={nodes}
+        edges={edges}
+      />
       <ReactFlow
         nodes={nodes}
         edges={styledEdges}

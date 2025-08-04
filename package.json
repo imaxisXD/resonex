@@ -10,7 +10,7 @@
     "dev:frontend": "next dev --turbopack",
     "dev:backend": "convex dev",
     "predev": "convex dev --until-success && convex dev --once --run-sh \"node setup.mjs --once\"",
-    "build": "next build",
+    "build": "next build --turbopack",
     "start": "next start",
     "lint": "next lint"
   },
@@ -26,6 +26,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@react-email/components": "^0.3.2",
     "@react-email/render": "^1.1.3",
+    "@react-three/fiber": "^9.3.0",
     "@xyflow/react": "^12.8.2",
     "ai": "^4.3.19",
     "class-variance-authority": "^0.7.1",
@@ -48,6 +49,7 @@
     "resend": "^4.0.1",
     "sonner": "^2.0.6",
     "tailwind-merge": "^3.3.1",
+    "three": "^0.179.1",
     "vaul": "^1.1.2"
   },
   "devDependencies": {
@@ -56,6 +58,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.178.1",
     "dotenv": "^16.4.7",
     "eslint": "^9",
     "eslint-config-next": "15.2.3",

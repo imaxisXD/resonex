@@ -373,4 +373,205 @@ export class ConnectionRulesEngine {
 
     return false;
   }
+
+  validateAllNodesStatus(
+    nodes: Node[],
+    edges: Edge[],
+  ): {
+    allReady: boolean;
+    nodeStatuses: Array<{
+      nodeId: string;
+      nodeType: string;
+      status: "ready" | "pending" | "error";
+      message?: string;
+      issues?: string[];
+    }>;
+    abTestValidation: Array<{
+      nodeId: string;
+      outputEdges: number;
+      connectedNodes: number;
+      isValid: boolean;
+      message?: string;
+    }>;
+  } {
+    const nodeStatuses = nodes.map((node) => {
+      const nodeType = this.getNodeType(node);
+      return this.validateSingleNodeStatus(node, edges, nodes, nodeType);
+    });
+
+    const abTestValidation = nodes
+      .filter((node) => this.getNodeType(node) === "abTestNode")
+      .map((node) => this.validateABTestNodeConnections(node, edges, nodes));
+
+    const allReady =
+      nodeStatuses.every((status) => status.status === "ready") &&
+      abTestValidation.every((validation) => validation.isValid);
+
+    return {
+      allReady,
+      nodeStatuses,
+      abTestValidation,
+    };
+  }
+
+  private validateSingleNodeStatus(
+    node: Node,
+    edges: Edge[],
+    nodes: Node[],
+    nodeType: string,
+  ): {
+    nodeId: string;
+    nodeType: string;
+    status: "ready" | "pending" | "error";
+    message?: string;
+    issues?: string[];
+  } {
+    const nodeData = node.data as Record<string, unknown>;
+    const issues: string[] = [];
+    let status: "ready" | "pending" | "error" = "pending";
+    let message = "";
+
+    switch (nodeType) {
+      case "campaignNode":
+        const campaignData = nodeData;
+        if (campaignData.status === "created") {
+          status = "ready";
+          message = "Campaign node is ready";
+        } else {
+          if (!campaignData.campaignName)
+            issues.push("Campaign name is required");
+          if (!campaignData.prompt) issues.push("Campaign prompt is required");
+          message = "Campaign node needs configuration";
+        }
+        break;
+
+      case "abTestNode":
+        const abTestData = nodeData as { outputEdges?: number };
+        const outputEdges = abTestData.outputEdges || 2;
+        const connections = edges.filter(
+          (edge) => edge.source === node.id,
+        ).length;
+
+        if (connections === outputEdges) {
+          status = "ready";
+          message = `A/B Test node has all ${outputEdges} connections`;
+        } else if (connections < outputEdges) {
+          issues.push(`Missing ${outputEdges - connections} connection(s)`);
+          message = `A/B Test node needs ${outputEdges - connections} more connection(s)`;
+        } else {
+          status = "error";
+          issues.push(`Too many connections: ${connections}/${outputEdges}`);
+          message = `A/B Test node has excess connections`;
+        }
+        break;
+
+      case "contentGenerationNode":
+        const contentData = nodeData as {
+          selectedTemplate?: unknown;
+          data?: { _id?: string };
+        };
+        const incomingEdges = edges.filter((edge) => edge.target === node.id);
+        const hasABTestConnection = incomingEdges.some((edge) => {
+          const sourceNode = nodes.find((n) => n.id === edge.source);
+          return sourceNode && this.getNodeType(sourceNode) === "abTestNode";
+        });
+
+        if (contentData.selectedTemplate && hasABTestConnection) {
+          status = "ready";
+          message = "Content generation node is ready";
+        } else {
+          if (!contentData.selectedTemplate)
+            issues.push("Template not selected");
+          if (!hasABTestConnection)
+            issues.push("Not connected to A/B Test node");
+          message = "Content generation node needs configuration";
+        }
+        break;
+
+      case "recipientsEmailNode":
+        const emailData = nodeData as { emails?: Array<{ email: string }> };
+        const emailCount = emailData.emails?.length || 0;
+
+        if (emailCount >= 2) {
+          status = "ready";
+          message = `Recipients node has ${emailCount} email(s)`;
+        } else {
+          issues.push(`Need at least 2 emails (currently ${emailCount})`);
+          message = "Recipients node needs more emails";
+        }
+        break;
+
+      case "scheduleNode":
+        const scheduleData = nodeData as {
+          selectedDate?: Date | string;
+          selectedTime?: string;
+        };
+
+        if (scheduleData.selectedDate && scheduleData.selectedTime) {
+          status = "ready";
+          message = "Schedule node is configured";
+        } else {
+          if (!scheduleData.selectedDate) issues.push("Date not selected");
+          if (!scheduleData.selectedTime) issues.push("Time not selected");
+          message = "Schedule node needs date and time";
+        }
+        break;
+
+      default:
+        status = "ready";
+        message = `Unknown node type: ${nodeType}`;
+        break;
+    }
+
+    return {
+      nodeId: node.id,
+      nodeType,
+      status,
+      message,
+      issues: issues.length > 0 ? issues : undefined,
+    };
+  }
+
+  private validateABTestNodeConnections(
+    node: Node,
+    edges: Edge[],
+    nodes: Node[],
+  ): {
+    nodeId: string;
+    outputEdges: number;
+    connectedNodes: number;
+    isValid: boolean;
+    message?: string;
+  } {
+    const nodeData = node.data as { outputEdges?: number };
+    const outputEdges = nodeData.outputEdges || 2;
+
+    const connectedContentNodes = edges.filter((edge) => {
+      if (edge.source !== node.id) return false;
+
+      const targetNode = nodes.find((n) => n.id === edge.target);
+      return (
+        targetNode && this.getNodeType(targetNode) === "contentGenerationNode"
+      );
+    }).length;
+
+    const isValid = connectedContentNodes === outputEdges;
+    let message = "";
+
+    if (isValid) {
+      message = `A/B Test node properly connected to ${outputEdges} content generation nodes`;
+    } else if (connectedContentNodes < outputEdges) {
+      message = `A/B Test node needs ${outputEdges - connectedContentNodes} more content generation node connection(s)`;
+    } else {
+      message = `A/B Test node has too many connections: ${connectedContentNodes}/${outputEdges}`;
+    }
+
+    return {
+      nodeId: node.id,
+      outputEdges,
+      connectedNodes: connectedContentNodes,
+      isValid,
+      message,
+    };
+  }
 }

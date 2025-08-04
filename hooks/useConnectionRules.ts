@@ -19,5 +19,12 @@ export const useConnectionRules = (nodes: Node[], edges: Edge[]) => {
     [connectionRulesEngine, nodes, edges],
   );
 
-  return { isValidConnection };
+  const validateAllNodesStatus = useCallback(() => {
+    return connectionRulesEngine.validateAllNodesStatus(nodes, edges);
+  }, [connectionRulesEngine, nodes, edges]);
+
+  return {
+    isValidConnection,
+    validateAllNodesStatus,
+  };
 };
