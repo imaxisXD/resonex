@@ -3,7 +3,6 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import DashboardIcon from "./icons/DashboardIcon";
 import MailIcon from "./icons/MailIcon";
-import AnalyticsIcon from "./icons/AnalyticsIcon";
 import SettingsIcon from "./icons/SettingsIcon";
 import Image from "next/image";
 import { buttonVariants } from "./ui/button";
@@ -76,11 +75,6 @@ export default function Sidebar() {
             <span className="text-sm">Campaigns</span>
           </div>
         </Link>
-
-        <div className={getNavItemClasses(pathname.includes("/analytics"))}>
-          <AnalyticsIcon className="h-5 w-5" />
-          <span className="text-sm">Analytics</span>
-        </div>
 
         <Link
           href="/dashboard/logs"

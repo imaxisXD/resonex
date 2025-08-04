@@ -261,9 +261,7 @@ function CampaignPageContent() {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  edges.forEach((edge) => {
-    console.log(edge);
-  });
+
   const { isValidConnection } = useConnectionRules(nodes, edges);
 
   const handleSaveCanvas = useCallback(async () => {
@@ -318,17 +316,12 @@ function CampaignPageContent() {
   }, [campaignId, nodes, edges, saveCanvas]);
 
   useEffect(() => {
-    // Skip restoration if we've already restored initial state
     if (hasRestoredInitialState.current) {
       return;
     }
-
-    // Try to restore from savedCanvas first
     if (savedCanvas?.nodes && savedCanvas?.edges) {
       const nodesWithDeletable = savedCanvas.nodes.map((node) => {
         let processedNode = node;
-
-        // Deserialize Date strings back to Date objects for schedule nodes
         if (
           node.type === "scheduleNode" &&
           node.data.selectedDate &&
@@ -355,10 +348,11 @@ function CampaignPageContent() {
       setNodes(nodesWithDeletable);
       setEdges(savedCanvas.edges);
       hasRestoredInitialState.current = true;
-    }
-    // Fallback to initial nodes if no saved canvas and campaign is loaded
-    else if (campaign && initialNodes.length > 0 && savedCanvas !== undefined) {
-      // Only set initial nodes if savedCanvas query has completed (even if empty)
+    } else if (
+      campaign &&
+      initialNodes.length > 0 &&
+      savedCanvas !== undefined
+    ) {
       setNodes(initialNodes);
       setEdges(initialEdges);
       hasRestoredInitialState.current = true;

@@ -10,45 +10,10 @@ import CampaignCard from "@/components/CampaignCard";
 
 export default function Dashboard() {
   const campaigns = useQuery(api.campaigns.getCampaigns, {});
-  // const userAnalytics = undefined;
 
   if (campaigns === undefined) {
     return <DashboardSkeleton />;
   }
-
-  // // Transform campaigns data for CampaignCard component
-  // const transformedCampaigns = campaigns.slice(0, 4).map((campaign) => {
-  //   // Calculate analytics for sent campaigns
-  //   let openRateA = 0,
-  //     openRateB = 0;
-
-  //   if (campaign.status === "sent") {
-  //     // Note: In a real implementation, you'd fetch campaign-specific analytics
-  //     // For now, using placeholder values
-  //     openRateA = Math.random() * 40 + 10; // 10-50%
-  //     openRateB = Math.random() * 40 + 10; // 10-50%
-  //   }
-
-  //   return {
-  //     id: campaign._id,
-  //     title:
-  //       campaign.prompt.slice(0, 50) +
-  //       (campaign.prompt.length > 50 ? "..." : ""),
-  //     subjectLines: " campaign.subjectLines",
-  //     status: campaign.status,
-  //     recipients: campaign.recipients?.length || 0,
-  //     openRateA: campaign.status === "sent" ? openRateA : undefined,
-  //     openRateB: campaign.status === "sent" ? openRateB : undefined,
-  //     scheduledTime:
-  //       campaign.status === "scheduled" && campaign.sendTimeA
-  //         ? new Date(campaign.sendTimeA).toLocaleDateString() +
-  //           " " +
-  //           new Date(campaign.sendTimeA).toLocaleTimeString()
-  //         : undefined,
-  //     category: campaign.category,
-  //   };
-  // });
-
   return (
     <div className="mx-auto max-w-7xl space-y-8 pt-16 pb-5 pl-4">
       {campaigns.length > 0 && (
