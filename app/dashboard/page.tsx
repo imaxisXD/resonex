@@ -69,7 +69,7 @@ export default function Dashboard() {
 
           {campaigns.length > 0 && (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {campaigns.map((campaign) => (
+              {campaigns.slice(0, 4).map((campaign) => (
                 <CampaignCard key={campaign._id} campaign={campaign} />
               ))}
             </div>
