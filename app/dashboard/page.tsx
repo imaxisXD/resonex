@@ -39,14 +39,13 @@ export default function Dashboard() {
           Go fast and test your ideas
         </h1>
       </div> */}
-      {campaigns.length > 0 && (
+      {/* {campaigns.length > 0 && (
         <div>
           <h2 className="mb-6 text-lg font-semibold text-gray-900">
             Key Metrics
           </h2>
           {/* <MetricDashboard analytics={userAnalytics} /> */}
-        </div>
-      )}
+      {/* </div> */}
 
       {/* Main Grid */}
       <div className="grid w-full grid-cols-1 gap-8 lg:grid-cols-3">
@@ -68,7 +67,7 @@ export default function Dashboard() {
             </div>
           )}
 
-          {campaigns.length === 0 && (
+          {campaigns.length > 0 && (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {campaigns.map((campaign) => (
                 <CampaignCard key={campaign._id} campaign={campaign} />
