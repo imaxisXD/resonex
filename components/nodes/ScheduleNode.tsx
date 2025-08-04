@@ -19,10 +19,12 @@ interface ScheduleNodeProps {
   data: CampaignNodeData & {
     selectedDate?: Date | string;
     selectedTime?: string | null;
+    selectedDateTimeUTC?: Date | string;
   };
   onScheduleDataChange?: (scheduleData: {
-    selectedDate?: Date;
+    selectedDate?: Date | string;
     selectedTime?: string | null;
+    selectedDateTimeUTC?: Date | string;
   }) => void;
 }
 
@@ -42,7 +44,16 @@ export const ScheduleNode = memo(function ScheduleNode({
   const [selectedTime, setSelectedTime] = useState<string | null>(
     data.selectedTime || null,
   );
-
+  const [selectedDateTimeUTC, setSelectedDateTimeUTC] = useState<
+    Date | undefined
+  >(() => {
+    if (data.selectedDateTimeUTC) {
+      return data.selectedDateTimeUTC instanceof Date
+        ? data.selectedDateTimeUTC
+        : new Date(data.selectedDateTimeUTC);
+    }
+    return undefined;
+  });
   useEffect(() => {
     // Don't update local state when dialog is open to prevent calendar from rerendering
     // while user is actively selecting date/time
@@ -67,22 +78,55 @@ export const ScheduleNode = memo(function ScheduleNode({
     if (data.selectedTime !== undefined && data.selectedTime !== selectedTime) {
       setSelectedTime(data.selectedTime);
     }
-  }, [data.selectedDate, data.selectedTime, open, date, selectedTime]);
 
-  const handleScheduleUpdate = (newDate?: Date, newTime?: string | null) => {
-    // Update local state immediately for immediate UI feedback
+    // Update selectedDateTimeUTC if it's different from current local state
+    if (data.selectedDateTimeUTC !== undefined) {
+      const utcValue =
+        data.selectedDateTimeUTC instanceof Date
+          ? data.selectedDateTimeUTC
+          : typeof data.selectedDateTimeUTC === "string"
+            ? new Date(data.selectedDateTimeUTC)
+            : data.selectedDateTimeUTC;
+
+      // Only update if the UTC date is actually different
+      if (
+        utcValue &&
+        (!selectedDateTimeUTC ||
+          utcValue.getTime() !== selectedDateTimeUTC.getTime())
+      ) {
+        setSelectedDateTimeUTC(utcValue);
+      }
+    }
+  }, [
+    data.selectedDate,
+    data.selectedTime,
+    data.selectedDateTimeUTC,
+    open,
+    date,
+    selectedTime,
+    selectedDateTimeUTC,
+  ]);
+
+  const handleScheduleUpdate = (
+    newDate?: Date,
+    newTime?: string | null,
+    selectedDateTimeUTC?: Date,
+  ) => {
     if (newDate !== undefined) {
       setDate(newDate);
     }
     if (newTime !== undefined) {
       setSelectedTime(newTime);
     }
+    if (selectedDateTimeUTC !== undefined) {
+      setSelectedDateTimeUTC(selectedDateTimeUTC);
+    }
 
-    // Update parent component
     if (onScheduleDataChange) {
       onScheduleDataChange({
         selectedDate: newDate,
         selectedTime: newTime,
+        selectedDateTimeUTC: selectedDateTimeUTC,
       });
     }
   };
@@ -154,8 +198,8 @@ export const ScheduleNode = memo(function ScheduleNode({
             <CalendarDate
               close={() => setOpen(false)}
               onSelect={(utcString) => {
-                const selectedDateTime = new Date(utcString);
-                const timeString = selectedDateTime.toLocaleTimeString(
+                const selectedDateTimeUTC = new Date(utcString);
+                const timeString = selectedDateTimeUTC.toLocaleTimeString(
                   "en-US",
                   {
                     hour: "numeric",
@@ -163,7 +207,11 @@ export const ScheduleNode = memo(function ScheduleNode({
                     hour12: true,
                   },
                 );
-                handleScheduleUpdate(selectedDateTime, timeString);
+                handleScheduleUpdate(
+                  selectedDateTimeUTC,
+                  timeString,
+                  selectedDateTimeUTC,
+                );
               }}
               date={date}
               setDate={setDate}

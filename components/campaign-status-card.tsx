@@ -1,23 +1,30 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { memo, useMemo, useState } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { CardSpotlight } from "./ui/card-spotlight";
 import { type Node, type Edge } from "@xyflow/react";
 import { checkWorkflowReadiness } from "@/lib/utils";
 import { CheckCircleIcon, AlertCircleIcon, XCircleIcon } from "lucide-react";
 import confetti from "canvas-confetti";
+import { api } from "@/convex/_generated/api";
+import { useMutation } from "convex/react";
+import { Id } from "@/convex/_generated/dataModel";
 
 export default memo(function CampaignStatusCard({
   campaignStatus,
+  campaignId,
   nodes,
   edges = [],
 }: {
   campaignStatus: "draft" | "scheduled" | "sent";
   nodes: Node[];
+  campaignId: Id<"campaigns">;
   edges: Edge[];
 }) {
-  const [isRunning, setIsRunning] = useState(false);
-  console.log(isRunning);
+  console.log("nodes", nodes);
+  console.log("campaignStatus", campaignStatus);
+
+  const campaignStart = useMutation(api.campaigns.startCampaign);
   const workflowStatus = useMemo(() => {
     return checkWorkflowReadiness(nodes, edges);
   }, [nodes, edges]);
@@ -25,10 +32,10 @@ export default memo(function CampaignStatusCard({
   const statusConfig = useMemo(() => {
     if (campaignStatus === "scheduled") {
       return {
-        title: isRunning ? "Campaign is Running" : "Campaign is Running",
-        subtitle: `Campaign ready to launch`,
-        buttonText: isRunning ? "Running" : "Launch Campaign",
-        buttonVariant: isRunning ? ("outline" as const) : ("default" as const),
+        title: "Campaign is Running",
+        subtitle: `Campaign is running`,
+        buttonText: "Running",
+        buttonVariant: "outline" as const,
         icon: CheckCircleIcon,
         iconColor: "text-green-600",
         bgColor: "rgba(34, 197, 94, 0.25)",
@@ -74,16 +81,36 @@ export default memo(function CampaignStatusCard({
         bgColor: "rgba(245, 158, 11, 0.25)",
       };
     }
-  }, [workflowStatus, campaignStatus, isRunning]);
+  }, [workflowStatus, campaignStatus]);
 
-  const shouldShowCard =
-    campaignStatus === "draft" ||
-    campaignStatus === "scheduled" ||
-    campaignStatus === "sent" ||
-    workflowStatus.isReady;
-  if (isRunning) {
-    return null;
-  }
+  const shouldShowCard = workflowStatus.isReady;
+
+  const startCampaign = useCallback(async () => {
+    const scheduleTime = nodes.find((node) => node.id === "schedule");
+    const recipients = nodes.find((node) => {
+      return node.id === "recipients";
+    });
+
+    if (scheduleTime && recipients) {
+      if (campaignStatus === "draft") {
+        confetti({
+          particleCount: 100,
+          spread: 100,
+          origin: { y: 0.6 },
+        });
+        await campaignStart({
+          campaignId: campaignId,
+          scheduleTime: Date.parse(
+            scheduleTime.data.selectedDateTimeUTC as unknown as string,
+          ),
+          recipients: recipients.data.emails as {
+            email: string;
+            name: string;
+          }[],
+        });
+      }
+    }
+  }, [campaignId, campaignStatus, nodes, campaignStart]);
 
   return (
     <CardSpotlight
@@ -119,24 +146,16 @@ export default memo(function CampaignStatusCard({
             </div>
           </div>
 
-          <Button
-            className="h-7 w-full rounded-sm text-xs"
-            variant={"outline"}
-            size="sm"
-            onClick={() => {
-              if (campaignStatus === "draft") {
-                confetti({
-                  particleCount: 100,
-                  spread: 100,
-                  origin: { y: 0.6 },
-                });
-                setIsRunning(true);
-              }
-            }}
-            // disabled={campaignStatus === "sent" || isRunning}
-          >
-            {statusConfig.buttonText}
-          </Button>
+          {campaignStatus === "draft" && (
+            <Button
+              className="h-7 w-full rounded-sm text-xs"
+              variant={"outline"}
+              size="sm"
+              onClick={startCampaign}
+            >
+              {statusConfig.buttonText}
+            </Button>
+          )}
         </div>
       </div>
     </CardSpotlight>

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 export const createCampaign = mutation({
   args: {
@@ -304,6 +305,58 @@ export const deleteEmailNode = mutation({
       emailIds: campaign.emailIds?.filter((id) => id !== getEmail._id) || [],
     });
     await ctx.db.delete(getEmail._id);
+    return null;
+  },
+});
+
+export const startCampaign = mutation({
+  args: {
+    campaignId: v.id("campaigns"),
+    scheduleTime: v.number(),
+    recipients: v.array(
+      v.object({
+        email: v.string(),
+        name: v.string(),
+      }),
+    ),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const userId = await ctx.auth.getUserIdentity();
+    if (!userId) {
+      throw new Error("User must be authenticated");
+    }
+
+    const campaign = await ctx.db.get(args.campaignId);
+    if (!campaign || campaign.userId !== userId.subject) {
+      throw new Error("Campaign not found or access denied");
+    }
+    if (campaign.status === "draft" && args.scheduleTime && args.recipients) {
+      await ctx.db.patch(campaign._id, {
+        recipients: args.recipients,
+      });
+
+      const emails = await ctx.db
+        .query("abEmails")
+        .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
+        .collect();
+
+      if (emails.length > 0) {
+        for (const email of emails) {
+          await ctx.scheduler.runAt(
+            args.scheduleTime,
+            internal.abEmails.sendEmail,
+            {
+              emailId: email._id,
+              campaignId: args.campaignId,
+            },
+          );
+          await ctx.db.patch(campaign._id, {
+            status: "scheduled",
+          });
+        }
+      }
+    }
     return null;
   },
 });

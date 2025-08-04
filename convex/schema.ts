@@ -6,7 +6,14 @@ export default defineSchema({
     campaignName: v.string(),
     userId: v.string(),
     prompt: v.string(),
-    recipients: v.optional(v.array(v.string())),
+    recipients: v.optional(
+      v.array(
+        v.object({
+          email: v.string(),
+          name: v.string(),
+        }),
+      ),
+    ),
     status: v.union(
       v.literal("draft"),
       v.literal("scheduled"),
@@ -41,6 +48,7 @@ export default defineSchema({
     ctaText: v.optional(v.string()),
     nodeId: v.string(),
     templateId: v.string(),
+    aiEmailString: v.optional(v.string()),
     resendEmailIds: v.optional(v.array(v.string())),
     status: v.union(
       v.literal("draft"),

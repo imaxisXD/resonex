@@ -1,5 +1,5 @@
 import { ConvexError, v } from "convex/values";
-import { internalMutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { vOnCompleteArgs } from "@convex-dev/workpool";
 import { Resend, vEmailEvent, vEmailId } from "@convex-dev/resend";
 import { components, internal } from "./_generated/api";
@@ -67,6 +67,35 @@ export const sendTestEmail = internalMutation({
   },
 });
 
+export const sendEmail = internalMutation({
+  args: {
+    emailId: v.id("abEmails"),
+    campaignId: v.id("campaigns"),
+  },
+  handler: async (ctx, args) => {
+    console.log("here");
+    const email = await ctx.db.get(args.emailId);
+    if (!email) {
+      throw new ConvexError("Email not found");
+    }
+    const campaign = await ctx.db.get(args.campaignId);
+    if (!campaign) {
+      throw new ConvexError("Campaign not found");
+    }
+    const recipient = campaign.recipients;
+    if (recipient) {
+      recipient.map(async (recipient) => {
+        await resend.sendEmail(ctx, {
+          from: "Resonex Feedback <support@campagin.resonex.cc>",
+          to: recipient.email,
+          subject: email.subjectLine,
+          html: email.aiEmailString,
+        });
+      });
+    }
+  },
+});
+
 // export const handleEmailEvent = resend.defineOnEmailEvent(async (ctx, args) => {
 //   console.log("Got called back!", args.id, args.event);
 //   // Probably do something with the event if you care about deliverability!
@@ -80,5 +109,24 @@ export const handleEmailEvent = internalMutation({
   handler: async (ctx, args) => {
     console.log("Email event:", args.id, args.event);
     // Probably do something with the event if you care about deliverability!
+  },
+});
+
+export const addAiEmailString = mutation({
+  args: {
+    emailId: v.id("abEmails"),
+    aiEmailString: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.auth.getUserIdentity();
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    const email = await ctx.db.get(args.emailId);
+    if (!email) {
+      throw new ConvexError("Email not found");
+    }
+    await ctx.db.patch(args.emailId, { aiEmailString: args.aiEmailString });
   },
 });

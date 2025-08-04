@@ -40,6 +40,7 @@ interface ABTestNodeData {
 interface ScheduleNodeData extends CampaignNodeData {
   selectedDate?: Date | string;
   selectedTime?: string | null;
+  selectedDateTimeUTC?: Date | string;
   [key: string]: unknown;
 }
 
@@ -98,6 +99,7 @@ function CampaignPageContent() {
       (scheduleData: {
         selectedDate?: Date | string;
         selectedTime?: string | null;
+        selectedDateTimeUTC?: Date | string;
       }) => {
         updateNodeData(id, scheduleData);
       },
@@ -220,6 +222,7 @@ function CampaignPageContent() {
                 : "disabled",
           selectedDate: undefined,
           selectedTime: null,
+          selectedDateTimeUTC: undefined,
         } satisfies ScheduleNodeData,
         type: "scheduleNode",
       },
@@ -275,15 +278,26 @@ function CampaignPageContent() {
 
             // Serialize Date objects to strings for Convex storage
             let serializedData: Record<string, unknown> = { ...node.data };
-            if (
-              node.type === "scheduleNode" &&
-              "selectedDate" in serializedData &&
-              serializedData.selectedDate instanceof Date
-            ) {
-              serializedData = {
-                ...serializedData,
-                selectedDate: serializedData.selectedDate.toISOString(),
-              };
+            if (node.type === "scheduleNode") {
+              if (
+                "selectedDate" in serializedData &&
+                serializedData.selectedDate instanceof Date
+              ) {
+                serializedData = {
+                  ...serializedData,
+                  selectedDate: serializedData.selectedDate.toISOString(),
+                };
+              }
+              if (
+                "selectedDateTimeUTC" in serializedData &&
+                serializedData.selectedDateTimeUTC instanceof Date
+              ) {
+                serializedData = {
+                  ...serializedData,
+                  selectedDateTimeUTC:
+                    serializedData.selectedDateTimeUTC.toISOString(),
+                };
+              }
             }
 
             return {
@@ -322,17 +336,28 @@ function CampaignPageContent() {
     if (savedCanvas?.nodes && savedCanvas?.edges) {
       const nodesWithDeletable = savedCanvas.nodes.map((node) => {
         let processedNode = node;
-        if (
-          node.type === "scheduleNode" &&
-          node.data.selectedDate &&
-          typeof node.data.selectedDate === "string"
-        ) {
+        if (node.type === "scheduleNode") {
+          const updatedData = { ...node.data };
+
+          if (
+            node.data.selectedDate &&
+            typeof node.data.selectedDate === "string"
+          ) {
+            updatedData.selectedDate = new Date(node.data.selectedDate);
+          }
+
+          if (
+            node.data.selectedDateTimeUTC &&
+            typeof node.data.selectedDateTimeUTC === "string"
+          ) {
+            updatedData.selectedDateTimeUTC = new Date(
+              node.data.selectedDateTimeUTC,
+            );
+          }
+
           processedNode = {
             ...node,
-            data: {
-              ...node.data,
-              selectedDate: new Date(node.data.selectedDate),
-            },
+            data: updatedData,
           };
         }
 
@@ -408,6 +433,7 @@ function CampaignPageContent() {
             status: "pending",
             selectedDate: undefined,
             selectedTime: null,
+            selectedDateTimeUTC: undefined,
           } satisfies ScheduleNodeData,
           type: "scheduleNode",
         };
@@ -554,6 +580,7 @@ function CampaignPageContent() {
         campaignStatus={campaign.status}
         nodes={nodes}
         edges={edges}
+        campaignId={campaign._id}
       />
       <ReactFlow
         nodes={nodes}

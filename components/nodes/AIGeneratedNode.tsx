@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import EmailPreview from "../EmailPreview";
+import { useMutation } from "convex/react";
 
 const AIGeneratedNode = memo(function AIGeneratedNode({
   emailData,
@@ -22,15 +23,19 @@ const AIGeneratedNode = memo(function AIGeneratedNode({
   emailData: FunctionReturnType<typeof api.abEmails.getEmailFromNodeId>;
 }) {
   const [emailHtml, setEmailHtml] = useState("");
-
+  const addAiEmailString = useMutation(api.abEmails.addAiEmailString);
   useEffect(() => {
     if (!emailData) return;
     const fetchEmailHtml = async () => {
       const html = await generateEmailHTMLFromData(emailData);
       setEmailHtml(html);
+      await addAiEmailString({
+        emailId: emailData._id,
+        aiEmailString: html,
+      });
     };
     fetchEmailHtml();
-  }, [emailData]);
+  }, [emailData, addAiEmailString]);
 
   return (
     <NodeAppendix
