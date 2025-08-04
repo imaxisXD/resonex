@@ -1,5 +1,4 @@
 "use client";
-// import MetricDashboard from "@/components/MetricDashboard";
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import DashboardSkeleton from "./DashboardSkeleton";
@@ -7,7 +6,6 @@ import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import CampaignCard from "@/components/CampaignCard";
-import Image from "next/image";
 
 export default function Dashboard() {
   const campaigns = useQuery(api.campaigns.getCampaigns, {});
