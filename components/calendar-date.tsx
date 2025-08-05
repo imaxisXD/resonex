@@ -3,7 +3,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { addHours, addMinutes, format, isSameDay, parse } from "date-fns";
+import { addMinutes, format, isSameDay, parse } from "date-fns";
 
 export function CalendarDate({
   onSelect,
