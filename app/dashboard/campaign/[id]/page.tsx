@@ -19,6 +19,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Doc } from "@/convex/_generated/dataModel";
 import { useParams } from "next/navigation";
 import ABTestNode from "@/components/nodes/ABTestNode";
 import ContentGenerationNode from "@/components/nodes/ContentGenerationNode";
@@ -81,10 +82,7 @@ function CampaignPageContent() {
     campaign ? { campaignId: campaign?._id } : "skip",
   );
   const saveCanvas = useMutation(api.reactFlowCanvas.saveCanvas);
-
   const { updateNodeData } = useReactFlow();
-
-  // Track if initial restoration from savedCanvas has happened
   const hasRestoredInitialState = useRef(false);
 
   const handleOutputEdgesChange = useCallback(
@@ -120,11 +118,12 @@ function CampaignPageContent() {
           title={data.title}
           target={data.target}
           data={data}
+          campaignStatus={campaign?.status}
           onOutputEdgesChange={handleOutputEdgesChange(id)}
         />
       );
     },
-    [handleOutputEdgesChange],
+    [handleOutputEdgesChange, campaign?.status],
   );
 
   const ScheduleNodeWrapper = useCallback(
@@ -132,11 +131,12 @@ function CampaignPageContent() {
       return (
         <ScheduleNode
           data={data}
+          campaignStatus={campaign?.status}
           onScheduleDataChange={handleScheduleDataChange(id)}
         />
       );
     },
-    [handleScheduleDataChange],
+    [handleScheduleDataChange, campaign?.status],
   );
 
   const RecipientsEmailNodeWrapper = useCallback(
@@ -144,22 +144,57 @@ function CampaignPageContent() {
       return (
         <RecipientsEmailNode
           data={data}
+          campaignStatus={campaign?.status}
           onEmailDataChange={handleEmailDataChange(id)}
         />
       );
     },
-    [handleEmailDataChange],
+    [handleEmailDataChange, campaign?.status],
+  );
+
+  const ContentGenerationNodeWrapper = useCallback(
+    ({
+      data,
+      id,
+    }: {
+      data: { label: string; data: Doc<"campaigns"> };
+      id: string;
+    }) => {
+      return (
+        <ContentGenerationNode
+          id={id}
+          data={data}
+          campaignStatus={campaign?.status}
+        />
+      );
+    },
+    [campaign?.status],
+  );
+
+  const CampaignNodeWrapper = useCallback(
+    ({ data }: { data: CampaignNodeData }) => {
+      return (
+        <CampaignNode data={{ ...data, campaignStatus: campaign?.status }} />
+      );
+    },
+    [campaign?.status],
   );
 
   const nodeTypes = useMemo(
     () => ({
-      campaignNode: CampaignNode,
+      campaignNode: CampaignNodeWrapper,
       scheduleNode: ScheduleNodeWrapper,
       abTestNode: ABTestNodeWrapper,
-      contentGenerationNode: ContentGenerationNode,
+      contentGenerationNode: ContentGenerationNodeWrapper,
       recipientsEmailNode: RecipientsEmailNodeWrapper,
     }),
-    [ABTestNodeWrapper, ScheduleNodeWrapper, RecipientsEmailNodeWrapper],
+    [
+      CampaignNodeWrapper,
+      ScheduleNodeWrapper,
+      ABTestNodeWrapper,
+      ContentGenerationNodeWrapper,
+      RecipientsEmailNodeWrapper,
+    ],
   );
 
   const initialNodes = useMemo(() => {

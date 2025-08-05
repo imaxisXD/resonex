@@ -342,19 +342,48 @@ export const startCampaign = mutation({
         .collect();
 
       if (emails.length > 0) {
-        for (const email of emails) {
-          await ctx.scheduler.runAt(
-            args.scheduleTime,
-            internal.abEmails.sendEmail,
-            {
-              emailId: email._id,
-              campaignId: args.campaignId,
-            },
-          );
-          await ctx.db.patch(campaign._id, {
-            status: "scheduled",
-          });
+        const splitRecipients = (
+          recipients: typeof args.recipients,
+          numEmails: number,
+        ) => {
+          const recipientsPerEmail = Math.floor(recipients.length / numEmails);
+          const remainder = recipients.length % numEmails;
+          const groups: (typeof args.recipients)[] = [];
+
+          let currentIndex = 0;
+          for (let i = 0; i < numEmails; i++) {
+            const groupSize = recipientsPerEmail + (i < remainder ? 1 : 0);
+            groups.push(
+              recipients.slice(currentIndex, currentIndex + groupSize),
+            );
+            currentIndex += groupSize;
+          }
+
+          return groups;
+        };
+
+        const recipientGroups = splitRecipients(args.recipients, emails.length);
+
+        for (let i = 0; i < emails.length; i++) {
+          const email = emails[i];
+          const recipientGroup = recipientGroups[i];
+
+          if (recipientGroup && recipientGroup.length > 0) {
+            await ctx.scheduler.runAt(
+              args.scheduleTime,
+              internal.abEmails.sendEmail,
+              {
+                emailId: email._id,
+                campaignId: args.campaignId,
+                recipients: recipientGroup,
+              },
+            );
+          }
         }
+
+        await ctx.db.patch(campaign._id, {
+          status: "scheduled",
+        });
       }
     }
     return null;

@@ -1,14 +1,22 @@
 "use client";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { memo, useCallback, useMemo } from "react";
 import { CardSpotlight } from "./ui/card-spotlight";
 import { type Node, type Edge } from "@xyflow/react";
-import { checkWorkflowReadiness } from "@/lib/utils";
-import { CheckCircleIcon, AlertCircleIcon, XCircleIcon } from "lucide-react";
+import { checkWorkflowReadiness, cn } from "@/lib/utils";
+import {
+  CheckCircleIcon,
+  AlertCircleIcon,
+  XCircleIcon,
+  ChartArea,
+  ArrowRight,
+} from "lucide-react";
 import confetti from "canvas-confetti";
 import { api } from "@/convex/_generated/api";
 import { useMutation } from "convex/react";
 import { Id } from "@/convex/_generated/dataModel";
+import { toast } from "sonner";
+import Link from "next/link";
 
 export default memo(function CampaignStatusCard({
   campaignStatus,
@@ -33,11 +41,9 @@ export default memo(function CampaignStatusCard({
     if (campaignStatus === "scheduled") {
       return {
         title: "Campaign is Running",
-        subtitle: `Campaign is running`,
-        buttonText: "Running",
+        subtitle: "Go view campaign analytics",
+        buttonText: "View Analytics",
         buttonVariant: "outline" as const,
-        icon: CheckCircleIcon,
-        iconColor: "text-green-600",
         bgColor: "rgba(34, 197, 94, 0.25)",
       };
     } else if (campaignStatus === "sent") {
@@ -108,6 +114,7 @@ export default memo(function CampaignStatusCard({
             name: string;
           }[],
         });
+        toast.success("Campaign started");
       }
     }
   }, [campaignId, campaignStatus, nodes, campaignStart]);
@@ -155,6 +162,19 @@ export default memo(function CampaignStatusCard({
             >
               {statusConfig.buttonText}
             </Button>
+          )}
+          {campaignStatus === "scheduled" && (
+            <Link
+              href={`/dashboard/activity/${campaignId}`}
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "group flex h-8 w-full items-center justify-center gap-1 rounded-sm border-t border-r border-b-0 border-l border-green-600 text-xs text-green-800",
+              )}
+            >
+              <ChartArea className="size-4" />
+              {statusConfig.buttonText}
+              <ArrowRight className="size-3 transition-transform duration-200 ease-in-out group-hover:translate-x-1" />
+            </Link>
           )}
         </div>
       </div>

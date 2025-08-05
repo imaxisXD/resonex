@@ -71,9 +71,15 @@ export const sendEmail = internalMutation({
   args: {
     emailId: v.id("abEmails"),
     campaignId: v.id("campaigns"),
+    recipients: v.array(
+      v.object({
+        email: v.string(),
+        name: v.string(),
+      }),
+    ),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
-    console.log("here");
     const email = await ctx.db.get(args.emailId);
     if (!email) {
       throw new ConvexError("Email not found");
@@ -82,17 +88,21 @@ export const sendEmail = internalMutation({
     if (!campaign) {
       throw new ConvexError("Campaign not found");
     }
-    const recipient = campaign.recipients;
-    if (recipient) {
-      recipient.map(async (recipient) => {
-        await resend.sendEmail(ctx, {
-          from: "Resonex Feedback <support@campagin.resonex.cc>",
+
+    if (args.recipients && args.recipients.length > 0) {
+      for (const recipient of args.recipients) {
+        const resendEmail = await resend.sendEmail(ctx, {
+          from: "Resonex <marketing@campagin.resonex.cc>",
           to: recipient.email,
           subject: email.subjectLine,
           html: email.aiEmailString,
         });
-      });
+        await ctx.db.patch(args.campaignId, {
+          resendEmailIds: [...(campaign.resendEmailIds || []), resendEmail],
+        });
+      }
     }
+    return null;
   },
 });
 

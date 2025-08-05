@@ -23,11 +23,13 @@ interface EmailData {
 interface RecipientsEmailNodeProps {
   data: { label: string; emails?: EmailData[] } & Record<string, unknown>;
   onEmailDataChange?: (emails: EmailData[]) => void;
+  campaignStatus?: string;
 }
 
 export const RecipientsEmailNode = memo(function RecipientsEmailNode({
   data,
   onEmailDataChange,
+  campaignStatus,
 }: RecipientsEmailNodeProps) {
   const [open, setOpen] = useState(false);
   const [emails, setEmails] = useState<EmailData[]>(data.emails || []);
@@ -75,6 +77,7 @@ export const RecipientsEmailNode = memo(function RecipientsEmailNode({
             {emails.length} recipient{emails.length !== 1 ? "s" : ""} added
           </div>
           <button
+            disabled={campaignStatus === "scheduled"}
             onClick={clearAllEmails}
             className="text-xs text-gray-500 transition-colors hover:text-red-500"
           >
@@ -123,6 +126,7 @@ export const RecipientsEmailNode = memo(function RecipientsEmailNode({
               buttonVariants({ variant: "outline" }),
               "h-9 w-full rounded-sm",
             )}
+            disabled={campaignStatus === "scheduled"}
           >
             <Plus className="size-4" />
             Add Emails

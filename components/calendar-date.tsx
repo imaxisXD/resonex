@@ -32,21 +32,8 @@ export function CalendarDate({
     const availableSlots: string[] = [];
 
     if (isToday) {
-      // For today, start from next hour rounded up
-      const oneHourFromNow = addHours(now, 1);
-      const startHour = oneHourFromNow.getHours();
-      const startMinute = Math.ceil(oneHourFromNow.getMinutes() / 15) * 15;
-
-      let currentSlot = new Date(selectedDate);
-      currentSlot.setHours(
-        startHour,
-        startMinute >= 60 ? 0 : startMinute,
-        0,
-        0,
-      );
-      if (startMinute >= 60) {
-        currentSlot = addHours(currentSlot, 1);
-      }
+      // For today, start exactly 5 minutes from now, then continue with 15-minute intervals
+      let currentSlot = addMinutes(now, 5);
 
       // Generate slots until end of day (11:30 PM)
       const endOfDay = new Date(selectedDate);

@@ -32,11 +32,13 @@ interface ContentGenerationNodeData {
 interface ContentGenerationNodeProps {
   id: string;
   data: ContentGenerationNodeData;
+  campaignStatus?: string;
 }
 
 const ContentGenerationNode = memo(function ContentGenerationNode({
   id,
   data,
+  campaignStatus,
 }: ContentGenerationNodeProps) {
   const { selectedTemplate, setSelectedTemplate } =
     useSynchronizedTemplateState(id);
@@ -171,7 +173,7 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
 
             <button
               onClick={generating ? undefined : openDrawer}
-              disabled={generating}
+              disabled={generating || campaignStatus === "scheduled"}
               className={cn(
                 "absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 transition-opacity duration-200",
                 generating
@@ -184,6 +186,8 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
                   buttonVariants({ variant: "default" }),
                   "h-8 text-xs",
                   generating && "cursor-not-allowed opacity-50",
+                  campaignStatus === "scheduled" &&
+                    "cursor-not-allowed opacity-50",
                 )}
               >
                 <Pencil className="size-4" />
@@ -257,7 +261,9 @@ const ContentGenerationNode = memo(function ContentGenerationNode({
             className="w-full"
             onClick={startGenerating}
             disabled={
-              nodeStatus === "pending" || emailFromDb?.status === "generating"
+              nodeStatus === "pending" ||
+              emailFromDb?.status === "generating" ||
+              campaignStatus === "scheduled"
                 ? true
                 : false
             }

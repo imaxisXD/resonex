@@ -26,11 +26,13 @@ interface ScheduleNodeProps {
     selectedTime?: string | null;
     selectedDateTimeUTC?: Date | string;
   }) => void;
+  campaignStatus?: string;
 }
 
 export const ScheduleNode = memo(function ScheduleNode({
   data,
   onScheduleDataChange,
+  campaignStatus,
 }: ScheduleNodeProps) {
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(() => {
@@ -184,6 +186,7 @@ export const ScheduleNode = memo(function ScheduleNode({
             buttonVariants({ variant: "default" }),
             "h-9 w-full rounded-sm",
           )}
+          disabled={campaignStatus === "scheduled"}
         >
           <CalendarCog className="size-4" />
           Select Date & Time

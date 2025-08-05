@@ -20,12 +20,7 @@ export default defineSchema({
       v.literal("sent"),
     ),
     category: v.union(v.literal("newsletter"), v.literal("marketing")),
-    resendEmailIds: v.optional(
-      v.object({
-        A: v.array(v.string()),
-        B: v.array(v.string()),
-      }),
-    ),
+    resendEmailIds: v.optional(v.array(v.string())),
     emailIds: v.optional(v.array(v.id("abEmails"))),
   })
     .index("by_user", ["userId"])

@@ -3,7 +3,7 @@ import { Mail } from "lucide-react";
 import { CampaignNodeData } from "@/lib/connection-rules";
 
 interface CampaignNodeProps {
-  data: CampaignNodeData;
+  data: CampaignNodeData & { campaignStatus?: string };
 }
 
 export const CampaignNode = ({ data }: CampaignNodeProps) => {

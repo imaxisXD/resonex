@@ -18,11 +18,13 @@ const ABTestNode = memo(function ABTestNode({
   target,
   onOutputEdgesChange,
   data,
+  campaignStatus,
 }: {
   title: string;
   target: string;
   onOutputEdgesChange?: (count: number) => void;
   data?: { outputEdges?: number };
+  campaignStatus?: string;
 }) {
   const [appendixVisible, setAppendixVisible] = useState(false);
   const [outputEdges, setOutputEdges] = useState(data?.outputEdges || 2);
@@ -100,10 +102,11 @@ const ABTestNode = memo(function ABTestNode({
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <h4 className="text-sm font-semibold">A/B Test Configuration</h4>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="icon"
                 className="absolute top-3 right-3 size-6 rounded-sm border drop-shadow-sm"
                 onClick={() => setAppendixVisible(false)}
+                disabled={campaignStatus === "scheduled"}
               >
                 <XIcon className="size-3" />
               </Button>
@@ -177,6 +180,7 @@ const ABTestNode = memo(function ABTestNode({
             size="icon"
             onClick={openConfiguration}
             className="h-6 w-6 rounded-sm border drop-shadow-sm"
+            disabled={campaignStatus === "scheduled"}
           >
             <SettingsIcon className="h-4 w-4 text-blue-700" />
           </Button>
