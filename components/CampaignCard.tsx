@@ -26,8 +26,8 @@ export default function CampaignCard({ campaign }: CampaignCardProps) {
     }
     if (campaign.resendEmailIds) {
       return (
-        (campaign.resendEmailIds.A?.length || 0) +
-        (campaign.resendEmailIds.B?.length || 0)
+        (campaign.resendEmailIds.filter((id) => id.includes("A")).length || 0) +
+        (campaign.resendEmailIds.filter((id) => id.includes("B")).length || 0)
       );
     }
     return 0;
