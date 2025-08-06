@@ -13,7 +13,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const getNavItemClasses = (isActive: boolean) => {
     const baseClasses =
-      "flex items-center gap-3 p-2.5 py-2.5 rounded-lg cursor-pointer transition-all duration-75 ease-in-out";
+      "flex items-center gap-3 p-2.5 py-2.5 rounded-lg cursor-pointer transition-all duration-150 ease-in-out active:scale-[0.97]";
     const activeClasses = "bg-highlight text-highlight-txt font-medium";
     const inactiveClasses =
       "text-gray-600 hover:bg-highlight hover:text-highlight-txt";
@@ -25,18 +25,28 @@ export default function Sidebar() {
     <div className="flex h-screen w-60 flex-col bg-gray-100">
       <div className="p-6 py-4 pb-7">
         <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-center gap-1">
+          <div className="flex h-[42px] w-[192px] items-center justify-center gap-1">
             <Image
               src="/resonex-logo.webp"
               alt="Resonex"
               width={36}
               height={36}
+              priority
+              style={{
+                height: "auto",
+                width: "auto",
+              }}
             />
             <Image
               src="/resonex-txt.webp"
               alt="Resonex"
               width={100}
               height={100}
+              priority
+              style={{
+                height: "auto",
+                width: "auto",
+              }}
             />
           </div>
           <p className="text-center text-xs text-gray-500">
@@ -48,7 +58,10 @@ export default function Sidebar() {
       <nav className="flex-1 space-y-1 pr-6 pl-4">
         <Link
           href="/dashboard/create-campaign"
-          className={cn(buttonVariants(), "mb-5 h-9 w-full")}
+          className={cn(
+            buttonVariants(),
+            "mb-5 h-9 w-full transition-all duration-150 ease-in-out active:scale-[0.97]",
+          )}
         >
           <PlusCircle className="h-4 w-4" />
           Create Campaign

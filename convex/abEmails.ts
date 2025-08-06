@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { vOnCompleteArgs } from "@convex-dev/workpool";
-import { Resend, vEmailEvent, vEmailId } from "@convex-dev/resend";
+import { EmailId, Resend, vEmailEvent, vEmailId } from "@convex-dev/resend";
 import { components, internal } from "./_generated/api";
 
 export const resend: Resend = new Resend(components.resend, {
@@ -138,5 +138,45 @@ export const addAiEmailString = mutation({
       throw new ConvexError("Email not found");
     }
     await ctx.db.patch(args.emailId, { aiEmailString: args.aiEmailString });
+  },
+});
+
+export const getEmailStatus = query({
+  args: {
+    campaignId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.auth.getUserIdentity();
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+    const campaignID = ctx.db.normalizeId("campaigns", args.campaignId);
+    if (!campaignID) {
+      throw new ConvexError("Campaign not found");
+    }
+    const campaign = await ctx.db.get(campaignID);
+    if (!campaign) {
+      throw new ConvexError("Campaign not found");
+    }
+    if (!campaign.resendEmailIds) {
+      return null;
+    }
+    const emailAndStatuses = await Promise.all(
+      campaign.resendEmailIds.map(async (emailId) => {
+        console.log("Getting email data for", emailId);
+        const emailData = await resend.get(ctx, emailId as EmailId);
+
+        return {
+          emailId: emailId,
+          to: emailData?.to ?? "<Deleted>",
+          subject: emailData?.subject ?? "<Deleted>",
+          status: emailData?.status,
+          errorMessage: emailData?.errorMessage,
+          opened: emailData?.opened,
+          complained: emailData?.complained,
+        };
+      }),
+    );
+    return emailAndStatuses;
   },
 });

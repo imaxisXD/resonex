@@ -11,6 +11,9 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Mock data based on PRD: A/B testing with Resend webhook events
 const mockCampaignData = {
@@ -70,6 +73,12 @@ const mockHistoricalData = [
 export default function CampaignActivityPage() {
   const params = useParams();
   const campaignId = params.id as string;
+  const campaign = useQuery(api.campaigns.getCampaign, { campaignId });
+  const emailStatuses = useQuery(api.abEmails.getEmailStatus, {
+    campaignId,
+  });
+
+  console.log(emailStatuses);
 
   // Calculate A/B testing metrics
   const totalA_delivered = mockABPerformance.reduce(
@@ -132,25 +141,27 @@ export default function CampaignActivityPage() {
   );
 
   return (
-    <div className="min-h-screen p-4">
+    <div className="min-h-screen rounded-tl-3xl p-4 py-10">
       <div className="mx-auto max-w-7xl space-y-6">
-        {/* Header */}
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-slate-900">
-            A/B Test Results
+        <div className="flex flex-col gap-1 space-y-1">
+          <h1 className="flex items-center gap-2 text-2xl leading-tight font-bold">
+            {campaign ? (
+              <span className="text-highlight-txt">
+                {campaign.campaignName}
+              </span>
+            ) : (
+              <Skeleton as="span" className="h-6 w-32" />
+            )}{" "}
+            - Analytics
           </h1>
-          <p className="text-sm text-slate-600">
-            Campaign {campaignId} - Subject Line Performance
-          </p>
         </div>
 
-        {/* A/B Test Winner */}
-        <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50">
-          <CardContent className="p-4">
+        <Card className="rounded-sm border-emerald-400 bg-gradient-to-tr from-white to-emerald-50/60 py-5">
+          <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="mb-1 font-semibold text-emerald-900">
-                  🏆 Winning Subject Line
+                  Winning Subject Line
                 </h3>
                 <p className="text-sm font-medium text-emerald-800">
                   Variant {mockCampaignData.winner}: &ldquo;
@@ -172,15 +183,14 @@ export default function CampaignActivityPage() {
           </CardContent>
         </Card>
 
-        {/* A/B Performance Comparison */}
         <div className="grid grid-cols-2 gap-4">
-          <Card className="border-l-4 border-l-blue-300">
+          <Card className="border-l-2 border-l-pink-300">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold text-slate-800">
                 Variant A Performance
               </CardTitle>
               <p className="text-xs text-slate-600">
-                &ldquo;{mockCampaignData.subjectLines.A}&rdquo;
+                Subject Line: &ldquo;{mockCampaignData.subjectLines.A}&rdquo;
               </p>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -214,13 +224,13 @@ export default function CampaignActivityPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-purple-300">
+          <Card className="border-l-2 border-l-purple-300">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold text-slate-800">
                 Variant B Performance
               </CardTitle>
               <p className="text-xs text-slate-600">
-                &ldquo;{mockCampaignData.subjectLines.B}&rdquo;
+                Subject Line: &ldquo;{mockCampaignData.subjectLines.B}&rdquo;
               </p>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -291,7 +301,7 @@ export default function CampaignActivityPage() {
                   type="monotone"
                   dataKey="variantA_opened"
                   stackId="1"
-                  stroke="#3b82f6"
+                  stroke="var(--color-pink-500)"
                   fill="#3b82f640"
                   name="Variant A Opens"
                 />
@@ -299,7 +309,7 @@ export default function CampaignActivityPage() {
                   type="monotone"
                   dataKey="variantB_opened"
                   stackId="2"
-                  stroke="#8b5cf6"
+                  stroke="var(--color-purple-500)"
                   fill="#8b5cf640"
                   name="Variant B Opens"
                 />
@@ -310,64 +320,56 @@ export default function CampaignActivityPage() {
 
         {/* Overall Campaign Metrics */}
         <div className="grid grid-cols-4 gap-2">
-          <Card className="border-l-2 border-l-slate-300">
-            <CardContent className="p-2">
-              <div className="space-y-0.5">
-                <p className="text-xs font-medium tracking-wide text-slate-600 uppercase">
-                  Total Delivered
-                </p>
-                <p className="text-base font-bold text-slate-900">
-                  {totalDelivered.toLocaleString()}
-                </p>
-              </div>
+          <Card className="border-l-2 border-l-emerald-200">
+            <CardContent>
+              <p className="text-xs font-medium tracking-wide text-slate-600 uppercase">
+                Total Delivered
+              </p>
+              <p className="text-base font-bold text-slate-900">
+                {totalDelivered.toLocaleString()}
+              </p>
             </CardContent>
           </Card>
 
-          <Card className="border-l-2 border-l-slate-300">
-            <CardContent className="p-2">
-              <div className="space-y-0.5">
-                <p className="text-xs font-medium tracking-wide text-slate-600 uppercase">
-                  Total Opens
-                </p>
-                <p className="text-base font-bold text-slate-900">
-                  {totalOpened.toLocaleString()}
-                </p>
-                <p className="text-xs text-slate-500">
-                  {((totalOpened / totalDelivered) * 100).toFixed(1)}%
-                </p>
-              </div>
+          <Card className="border-l-2 border-l-sky-200">
+            <CardContent>
+              <p className="text-xs font-medium tracking-wide text-slate-600 uppercase">
+                Total Opens
+              </p>
+              <p className="text-base font-bold text-slate-900">
+                {totalOpened.toLocaleString()}
+              </p>
+              <p className="text-xs text-slate-500">
+                {((totalOpened / totalDelivered) * 100).toFixed(1)}%
+              </p>
             </CardContent>
           </Card>
 
-          <Card className="border-l-2 border-l-slate-300">
-            <CardContent className="p-2">
-              <div className="space-y-0.5">
-                <p className="text-xs font-medium tracking-wide text-slate-600 uppercase">
-                  Total Clicks
-                </p>
-                <p className="text-base font-bold text-slate-900">
-                  {totalClicked.toLocaleString()}
-                </p>
-                <p className="text-xs text-slate-500">
-                  {((totalClicked / totalOpened) * 100).toFixed(1)}%
-                </p>
-              </div>
+          <Card className="border-l-2 border-l-slate-400">
+            <CardContent>
+              <p className="text-xs font-medium tracking-wide text-slate-600 uppercase">
+                Total Clicks
+              </p>
+              <p className="text-base font-bold text-slate-900">
+                {totalClicked.toLocaleString()}
+              </p>
+              <p className="text-xs text-slate-500">
+                {((totalClicked / totalOpened) * 100).toFixed(1)}%
+              </p>
             </CardContent>
           </Card>
 
-          <Card className="border-l-2 border-l-slate-300">
-            <CardContent className="p-2">
-              <div className="space-y-0.5">
-                <p className="text-xs font-medium tracking-wide text-slate-600 uppercase">
-                  Total Bounces
-                </p>
-                <p className="text-base font-bold text-slate-900">
-                  {totalBounced.toLocaleString()}
-                </p>
-                <p className="text-xs text-red-600">
-                  {((totalBounced / totalDelivered) * 100).toFixed(1)}%
-                </p>
-              </div>
+          <Card className="border-l-2 border-l-red-200">
+            <CardContent>
+              <p className="text-xs font-medium tracking-wide text-slate-600 uppercase">
+                Total Bounces
+              </p>
+              <p className="text-base font-bold text-slate-900">
+                {totalBounced.toLocaleString()}
+              </p>
+              <p className="text-xs text-red-600">
+                {((totalBounced / totalDelivered) * 100).toFixed(1)}%
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -408,7 +410,7 @@ export default function CampaignActivityPage() {
                   type="monotone"
                   dataKey="delivered"
                   stackId="1"
-                  stroke="#cbd5e1"
+                  stroke="var(--color-emerald-500)"
                   fill="#e2e8f040"
                   name="Delivered"
                 />
@@ -416,7 +418,7 @@ export default function CampaignActivityPage() {
                   type="monotone"
                   dataKey="opened"
                   stackId="2"
-                  stroke="#64748b"
+                  stroke="var(--color-sky-500)"
                   fill="#64748b30"
                   name="Opened"
                 />
@@ -424,7 +426,7 @@ export default function CampaignActivityPage() {
                   type="monotone"
                   dataKey="clicked"
                   stackId="3"
-                  stroke="#374151"
+                  stroke="var(--color-slate-500)"
                   fill="#37415120"
                   name="Clicked"
                 />

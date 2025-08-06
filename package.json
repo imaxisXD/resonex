@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.27.1",
-    "@convex-dev/resend": "^0.1.7",
+    "@convex-dev/resend": "^0.1.9",
     "@convex-dev/workpool": "^0.2.18-alpha.2",
     "@openrouter/ai-sdk-provider": "^0.7.3",
     "@radix-ui/react-dialog": "^1.1.14",
