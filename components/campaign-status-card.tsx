@@ -24,14 +24,11 @@ export default memo(function CampaignStatusCard({
   nodes,
   edges = [],
 }: {
-  campaignStatus: "draft" | "scheduled" | "sent";
+  campaignStatus: "draft" | "scheduled" | "sent" | "delivered";
   nodes: Node[];
   campaignId: Id<"campaigns">;
   edges: Edge[];
 }) {
-  console.log("nodes", nodes);
-  console.log("campaignStatus", campaignStatus);
-
   const campaignStart = useMutation(api.campaigns.startCampaign);
   const workflowStatus = useMemo(() => {
     return checkWorkflowReadiness(nodes, edges);
@@ -45,6 +42,13 @@ export default memo(function CampaignStatusCard({
         buttonText: "View Analytics",
         buttonVariant: "outline" as const,
         bgColor: "rgba(34, 197, 94, 0.25)",
+      };
+    } else if (campaignStatus === "delivered") {
+      return {
+        title: "Campaign Completed",
+        subtitle: "Campaign has been sent",
+        buttonText: "Campaign Sent",
+        buttonVariant: "outline" as const,
       };
     } else if (campaignStatus === "sent") {
       return {
@@ -163,7 +167,8 @@ export default memo(function CampaignStatusCard({
               {statusConfig.buttonText}
             </Button>
           )}
-          {campaignStatus === "scheduled" && (
+          {(campaignStatus === "scheduled" ||
+            campaignStatus === "delivered") && (
             <Link
               href={`/dashboard/activity/${campaignId}`}
               className={cn(

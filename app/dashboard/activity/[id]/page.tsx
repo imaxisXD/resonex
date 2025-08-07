@@ -15,7 +15,6 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Mock data based on PRD: A/B testing with Resend webhook events
 const mockCampaignData = {
   subjectLines: {
     A: "🚀 Weekly Fintech Digest - Market Insights Inside",
@@ -141,10 +140,11 @@ export default function CampaignActivityPage() {
   );
 
   return (
-    <div className="min-h-screen rounded-tl-3xl p-4 py-10">
+    <div className="mx-auto min-h-screen max-w-5xl rounded-tl-3xl p-4 py-10">
       <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex flex-col gap-1 space-y-1">
+        <div className="mb-10 flex flex-col gap-1 space-y-1">
           <h1 className="flex items-center gap-2 text-2xl leading-tight font-bold">
+            Campaign:
             {campaign ? (
               <span className="text-highlight-txt">
                 {campaign.campaignName}
@@ -156,7 +156,7 @@ export default function CampaignActivityPage() {
           </h1>
         </div>
 
-        <Card className="rounded-sm border-emerald-400 bg-gradient-to-tr from-white to-emerald-50/60 py-5">
+        <Card className="rounded-lg border-x border-x-emerald-400 bg-gradient-to-tr from-white to-emerald-50/60 py-5">
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
@@ -187,7 +187,7 @@ export default function CampaignActivityPage() {
           <Card className="border-l-2 border-l-pink-300">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold text-slate-800">
-                Variant A Performance
+                Variant A:
               </CardTitle>
               <p className="text-xs text-slate-600">
                 Subject Line: &ldquo;{mockCampaignData.subjectLines.A}&rdquo;
@@ -227,7 +227,7 @@ export default function CampaignActivityPage() {
           <Card className="border-l-2 border-l-purple-300">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold text-slate-800">
-                Variant B Performance
+                Variant B:
               </CardTitle>
               <p className="text-xs text-slate-600">
                 Subject Line: &ldquo;{mockCampaignData.subjectLines.B}&rdquo;

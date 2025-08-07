@@ -1,3 +1,4 @@
+import { vEmailId } from "@convex-dev/resend";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
@@ -18,6 +19,7 @@ export default defineSchema({
       v.literal("draft"),
       v.literal("scheduled"),
       v.literal("sent"),
+      v.literal("delivered"),
     ),
     category: v.union(v.literal("newsletter"), v.literal("marketing")),
     resendEmailIds: v.optional(v.array(v.string())),
@@ -39,30 +41,34 @@ export default defineSchema({
     campaignId: v.id("campaigns"),
     body: v.string(),
     subjectLine: v.string(),
-    sendTime: v.optional(v.number()),
     ctaText: v.optional(v.string()),
     nodeId: v.string(),
     templateId: v.string(),
     aiEmailString: v.optional(v.string()),
-    resendEmailIds: v.optional(v.array(v.string())),
-    status: v.union(
-      v.literal("draft"),
-      v.literal("scheduled"),
-      v.literal("sent"),
-      v.literal("generating"),
-    ),
+    status: v.union(v.literal("draft"), v.literal("generating")),
   })
     .index("by_node_id", ["nodeId"])
     .index("by_template_id", ["templateId"])
     .index("by_campaign", ["campaignId"])
     .index("by_campaign_node", ["campaignId", "nodeId"])
     .index("by_status", ["status"]),
-
-  events: defineTable({
-    emailId: v.string(),
+  abEmailResend: defineTable({
+    resendEmailId: vEmailId,
+    emailId: v.id("abEmails"),
+    campaignId: v.id("campaigns"),
+    event: v.optional(v.string()),
+    recipient: v.optional(v.string()),
+    timestamp: v.optional(v.string()),
+  })
+    .index("by_resend_email_id", ["resendEmailId"])
+    .index("by_email_id", ["emailId"])
+    .index("by_campaign_id", ["campaignId"]),
+  emailAnalytics: defineTable({
+    resendEmailId: vEmailId,
+    emailId: v.id("abEmails"),
     campaignId: v.id("campaigns"),
     recipient: v.string(),
-    variant: v.union(v.literal("A"), v.literal("B")),
+    variant: v.string(),
     type: v.union(
       v.literal("delivered"),
       v.literal("opened"),
@@ -105,18 +111,4 @@ export default defineSchema({
       }),
     ),
   }).index("by_campaign", ["campaignId"]),
-  // Time-based recommendations
-  recommendations: defineTable({
-    userId: v.string(),
-    category: v.string(),
-    timeScores: v.array(
-      v.object({
-        dayOfWeek: v.string(),
-        hour: v.number(),
-        score: v.number(),
-      }),
-    ),
-  })
-    .index("by_user", ["userId"])
-    .index("by_user_and_category", ["userId", "category"]),
 });

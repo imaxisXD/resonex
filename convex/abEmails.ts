@@ -100,16 +100,16 @@ export const sendEmail = internalMutation({
         await ctx.db.patch(args.campaignId, {
           resendEmailIds: [...(campaign.resendEmailIds || []), resendEmail],
         });
+        await ctx.db.insert("abEmailResend", {
+          campaignId: campaign._id,
+          resendEmailId: resendEmail,
+          emailId: email._id,
+        });
       }
     }
     return null;
   },
 });
-
-// export const handleEmailEvent = resend.defineOnEmailEvent(async (ctx, args) => {
-//   console.log("Got called back!", args.id, args.event);
-//   // Probably do something with the event if you care about deliverability!
-// });
 
 export const handleEmailEvent = internalMutation({
   args: {
@@ -117,8 +117,27 @@ export const handleEmailEvent = internalMutation({
     event: vEmailEvent,
   },
   handler: async (ctx, args) => {
-    console.log("Email event:", args.id, args.event);
-    // Probably do something with the event if you care about deliverability!
+    const email = await ctx.db
+      .query("abEmailResend")
+      .withIndex("by_resend_email_id", (q) => q.eq("resendEmailId", args.id))
+      .first();
+    if (email) {
+      await ctx.db.patch(email._id, {
+        event: args.event.type,
+        recipient: args.event.data.to[0],
+        timestamp: args.event.created_at,
+      });
+      if (args.event.type === "email.sent") {
+        await ctx.db.patch(email.campaignId, {
+          status: "sent",
+        });
+      }
+      if (args.event.type === "email.delivered") {
+        await ctx.db.patch(email.campaignId, {
+          status: "delivered",
+        });
+      }
+    }
   },
 });
 

@@ -91,7 +91,6 @@ export function CalendarDate({
       local: localDateTime.toLocaleString(),
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
-    console.log("Scheduled appointment:", utcData);
     onSelect(utcData.utc);
     close();
   };

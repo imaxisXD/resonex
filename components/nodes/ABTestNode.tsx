@@ -180,7 +180,7 @@ const ABTestNode = memo(function ABTestNode({
             size="icon"
             onClick={openConfiguration}
             className="h-6 w-6 rounded-sm border drop-shadow-sm"
-            disabled={campaignStatus === "scheduled"}
+            disabled={campaignStatus !== "draft"}
           >
             <SettingsIcon className="h-4 w-4 text-blue-700" />
           </Button>

@@ -186,7 +186,7 @@ export const ScheduleNode = memo(function ScheduleNode({
             buttonVariants({ variant: "default" }),
             "h-9 w-full rounded-sm",
           )}
-          disabled={campaignStatus === "scheduled"}
+          disabled={campaignStatus !== "draft"}
         >
           <CalendarCog className="size-4" />
           Select Date & Time

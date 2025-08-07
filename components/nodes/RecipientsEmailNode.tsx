@@ -77,7 +77,7 @@ export const RecipientsEmailNode = memo(function RecipientsEmailNode({
             {emails.length} recipient{emails.length !== 1 ? "s" : ""} added
           </div>
           <button
-            disabled={campaignStatus === "scheduled"}
+            disabled={campaignStatus !== "draft"}
             onClick={clearAllEmails}
             className="text-xs text-gray-500 transition-colors hover:text-red-500"
           >
@@ -126,7 +126,7 @@ export const RecipientsEmailNode = memo(function RecipientsEmailNode({
               buttonVariants({ variant: "outline" }),
               "h-9 w-full rounded-sm",
             )}
-            disabled={campaignStatus === "scheduled"}
+            disabled={campaignStatus !== "draft"}
           >
             <Plus className="size-4" />
             Add Emails

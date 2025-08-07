@@ -3,7 +3,7 @@ import { MessageCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Textarea } from "./ui/textarea";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -25,16 +25,24 @@ export default function Header() {
     setOpen(false);
   };
 
+  const handleFeedback = useCallback(() => {
+    if (open) {
+      setOpen(false);
+    } else {
+      setOpen(true);
+    }
+  }, [open]);
+
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if ((e.key === "F" || e.key === "f") && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        handleFeedback();
       }
     };
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, []);
+  }, [handleFeedback]);
 
   return (
     <header className="relative z-10 bg-gray-100 px-8 py-3">
@@ -45,7 +53,7 @@ export default function Header() {
               variant="outline"
               className="h-9 text-sm"
               size="sm"
-              onClick={() => setOpen(true)}
+              onClick={handleFeedback}
             >
               <MessageCircle className="h-4 w-4" />
               Report / Feedback
